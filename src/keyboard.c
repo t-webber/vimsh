@@ -40,7 +40,7 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
 
         if (c == 10)
         {
-                clear_line(*len);
+                printf("\r$ %s\n", line);
                 execute_command(line);
                 *len = 0;
                 *ptr = line;
