@@ -1,9 +1,12 @@
+#include "display.h"
+#include "execute.h"
 #include "keyboard.h"
 #include "str.h"
+#include <stdio.h>
 #include <unistd.h>
 
-void handle_keypress(FILE *debug_file, const char *const line, char c,
-                     char **ptr, size_t *len)
+void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
+                     size_t *len)
 {
 
         // Escape character. Used to encode arrows.
@@ -22,7 +25,7 @@ void handle_keypress(FILE *debug_file, const char *const line, char c,
                 read_pressed_char(&next);
 
                 fprintf(debug_file, "Then %c!\n", next);
-                fflush(debug_file);
+                fflush(stdout);
 
                 if (next == 'D')
                         if (*ptr != line)
@@ -32,6 +35,16 @@ void handle_keypress(FILE *debug_file, const char *const line, char c,
                         if (**ptr != '\0')
                                 ++*ptr;
 
+                return;
+        }
+
+        if (c == 10)
+        {
+                clear_line(*len);
+                execute_command(line);
+                *len = 0;
+                *ptr = line;
+                **ptr = '\0';
                 return;
         }
 

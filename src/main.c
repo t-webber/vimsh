@@ -1,3 +1,4 @@
+#include "display.h"
 #include "keyboard.h"
 #include <assert.h>
 #include <pthread.h>
@@ -7,18 +8,6 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
-
-/// Clears the current line.
-///
-/// Thanks to this function, old characters aren't left on the screen (e.g.
-/// after pressing <Del>).
-void clear_line(const size_t len)
-{
-        printf("\r");
-        for (size_t i = 0; i < len; ++i)
-                printf(" ");
-        fflush(stdout);
-}
 
 /// Main runner that displays the prompt, the written characters and handles the
 /// keypresses.
@@ -47,7 +36,7 @@ void shell()
 
                 line[previous_len] = '\0';
 
-                printf("\r$ %s\r\033[%luC", line, ptr - line + 2);
+                printf("$ %s\r\033[%luC", line, ptr - line + 2);
                 fflush(stdout);
         }
 
