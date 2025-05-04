@@ -35,7 +35,6 @@ void shell()
                 handle_keypress(debug_file, line, c, &ptr, &previous_len);
 
                 line[previous_len] = '\0';
-
                 printf("$ %s\r\033[%luC", line, ptr - line + 2);
                 fflush(stdout);
         }
