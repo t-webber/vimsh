@@ -1,12 +1,13 @@
-.PHONY: all debug run clean
+.PHONY: all debug clean
 
-all: run
+HDRS  = $(shell find src/ | grep \.h$ )
+SRCS  = $(HDRS:.h=.c)
+SRCS += src/main.c
+
+all: debug 
 
 debug:
-				gcc -g src/main.c -o main.out 
-
-run: debug 
-				./main.out
+				gcc -g $(SRCS) -o main.out 
 
 clean:
-				rm -f main.out
+				rm -f main.out *.txt
