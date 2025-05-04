@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 
+bool die = false;
+
 void cd(char *const user_input)
 {
         bool has_path = false;
@@ -20,16 +22,14 @@ void cd(char *const user_input)
         chdir(getenv("HOME"));
 }
 
-bool execute_command(char *const user_input)
+void execute_command(char *const user_input)
 {
         if (strncmp("exit", user_input, 4) == 0)
-                return 1;
+                die = true;
 
         else if (strncmp("cd", user_input, 2) == 0)
                 cd(user_input);
 
         else
                 system(user_input);
-
-        return 0;
 }

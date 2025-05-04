@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-bool handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
+void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                      size_t *len)
 {
 
@@ -19,7 +19,7 @@ bool handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                 fprintf(debug_file, "Then %c!\n", next);
 
                 if (next != '[')
-                        return false;
+                        return;
 
                 read_pressed_char(&next);
 
@@ -34,17 +34,17 @@ bool handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                         if (**ptr != '\0')
                                 ++*ptr;
 
-                return false;
+                return;
         }
 
         if (c == 10)
         {
                 printf("\r$ %s\n", line);
-                bool should_exit = execute_command(line);
+                execute_command(line);
                 *len = 0;
                 *ptr = line;
                 **ptr = '\0';
-                return should_exit;
+                return;
         }
 
         /// <Del> key.
@@ -52,14 +52,14 @@ bool handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
         {
                 if (*ptr != line)
                         --*ptr, --*len;
-                return false;
+                return;
         }
 
         ++*len;
         insert_char(*ptr, c);
         ++*ptr;
 
-        return false;
+        return;
 }
 
 void read_pressed_char(char *c) { read(STDIN_FILENO, c, 1); }

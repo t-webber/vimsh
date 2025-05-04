@@ -2,7 +2,8 @@
 
 #include <stdbool.h>
 
-/// Executes a command entered in the input
-///
-/// Returns `true` if the program must exit, `false` else.
-bool execute_command(char *const user_input);
+/// Informs on whether the shell has to be killed or not.
+extern bool die;
+
+/// Executes a command entered in the input.
+void execute_command(char *const user_input);
