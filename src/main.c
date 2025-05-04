@@ -32,7 +32,9 @@ void shell()
                 fflush(debug_file);
 
                 clear_line(previous_len + 2);
-                handle_keypress(debug_file, line, c, &ptr, &previous_len);
+
+                if (handle_keypress(debug_file, line, c, &ptr, &previous_len))
+                        return;
 
                 line[previous_len] = '\0';
                 printf("$ %s\r\033[%luC", line, ptr - line + 2);
@@ -59,6 +61,8 @@ void handle_terminal_mode(void (*runner)())
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
         runner();
+
+        printf("Leaving raw mode...\n");
 
         // Restore terminal to default mode
         tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
