@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 /// Handle keypresses and edits the line buffer in consequences.
-void handle_keypress(FILE *debug_file, const char *const line, char c,
-                     char **ptr, size_t *len);
+void handle_keypress(FILE *debug_file, char *line, char c, char **ptr,
+                     size_t *len);
 
 /// Listens for the next char produced by a keypress.
 void read_pressed_char(char *c);
