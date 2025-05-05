@@ -1,7 +1,12 @@
 #include "str.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <assert.h>
 #include <string.h>
+
+void delete_char(char *const delete_position)
+{
+        for (char *reader = delete_position; *reader != '\0'; ++reader)
+                *reader = *(reader + 1);
+}
 
 void insert_char(char *const insert_position, char c)
 {
@@ -17,8 +22,23 @@ void insert_char(char *const insert_position, char c)
         *insert_position = c;
 }
 
-/// Tests the @ref insert_fchar
-void test_insert_char()
+/// Tests the @ref delete_char function
+static void test_delete_char()
+{
+        char string[] = "#Hello, world!";
+        delete_char(string);
+        delete_char(string + 5);
+        delete_char(string + 11);
+
+        assert(strcmp("Hello world", string) == 0);
+
+        char empty[] = "1";
+        delete_char(empty);
+        assert(empty[0] == '\0');
+}
+
+/// Tests the @ref insert_char function.
+static void test_insert_char()
 {
         char string[20] = "Hello world";
         insert_char(string + 5, ',');
@@ -26,18 +46,17 @@ void test_insert_char()
         insert_char(string, '#');
         insert_char(string + 14, '!');
 
-        if (strcmp("#Hello,- world!", string))
-        {
-                fprintf(stderr, "Hello world error\n");
-                exit(1);
-        }
+        assert(strcmp("#Hello,- world!", string) == 0);
 
         char empty[20] = "";
         insert_char(empty, '!');
-
-        if (strcmp(empty, "!"))
-        {
-                fprintf(stderr, "Empty error\n");
-                exit(1);
-        }
+        assert(strcmp(empty, "!") == 0);
 }
+
+#ifdef TEST
+int main()
+{
+        test_delete_char();
+        test_insert_char();
+}
+#endif
