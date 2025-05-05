@@ -1,4 +1,6 @@
 #include "execute.h"
+#include "history.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -22,8 +24,11 @@ void cd(char *const user_input)
         chdir(getenv("HOME"));
 }
 
-void execute_command(char *const user_input)
+void execute_command(char *const user_input, const size_t len)
 {
+
+        push_history(user_input, len);
+
         if (strncmp("exit", user_input, 4) == 0)
                 die = true;
 

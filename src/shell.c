@@ -1,6 +1,7 @@
 #include "display.h"
 #include "execute.h"
 #include "keyboard.h"
+#include "shell.h"
 #include <assert.h>
 #include <pthread.h>
 #include <signal.h>
@@ -35,6 +36,7 @@ void run_shell()
                 clear_line(previous_len + 2);
 
                 handle_keypress(debug_file, line, c, &ptr, &previous_len);
+
                 if (die)
                         break;
 
