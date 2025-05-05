@@ -35,6 +35,9 @@ void execute_command(char *const user_input, const size_t len)
         else if (strncmp("cd", user_input, 2) == 0)
                 cd(user_input);
 
+        else if (strcmp("print_history", user_input) == 0)
+                print_history();
+
         else
                 system(user_input);
 }
