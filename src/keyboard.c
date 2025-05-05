@@ -4,40 +4,63 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#define CTRL_A 1
+#define CTRL_E 5
+#define ENTER 10 // also ctrl+
+#define ESC 27
+#define BACKSPACE 127
+
+void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
+                         size_t *len)
+{
+        fprintf(debug_file, "Escaped!\n");
+
+        char next;
+        read_pressed_char(&next);
+
+        fprintf(debug_file, "Then %c!\n", next);
+
+        if (next != '[')
+                return;
+
+        read_pressed_char(&next);
+
+        fprintf(debug_file, "Then %c!\n", next);
+        fflush(stdout);
+
+        if (next == 'D')
+                if (*ptr != line)
+                        --*ptr;
+
+        if (next == 'C')
+                if (**ptr != '\0')
+                        ++*ptr;
+
+        return;
+}
+
 void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                      size_t *len)
 {
-
-        // Escape character. Used to encode arrows.
-        if (c == 27)
+        switch (c)
         {
-                fprintf(debug_file, "Escaped!\n");
 
-                char next;
-                read_pressed_char(&next);
-
-                fprintf(debug_file, "Then %c!\n", next);
-
-                if (next != '[')
-                        return;
-
-                read_pressed_char(&next);
-
-                fprintf(debug_file, "Then %c!\n", next);
-                fflush(stdout);
-
-                if (next == 'D')
-                        if (*ptr != line)
-                                --*ptr;
-
-                if (next == 'C')
-                        if (**ptr != '\0')
-                                ++*ptr;
-
+        case CTRL_A:
+        {
+                *ptr = line;
                 return;
         }
 
-        if (c == 10)
+        case CTRL_E:
+        {
+                *ptr = line + *len;
+                return;
+        }
+
+        case ESC:
+                return handle_escape_press(debug_file, line, c, ptr, len);
+
+        case ENTER:
         {
                 printf("\r$ %s\n", line);
                 execute_command(line);
@@ -47,19 +70,23 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                 return;
         }
 
-        /// <Del> key.
-        if (c == 127)
+        case BACKSPACE:
         {
                 if (*ptr != line)
                         --*ptr, --*len;
                 return;
         }
 
-        ++*len;
-        insert_char(*ptr, c);
-        ++*ptr;
+        default:
+        {
 
-        return;
+                ++*len;
+                insert_char(*ptr, c);
+                ++*ptr;
+
+                return;
+        }
+        }
 }
 
 void read_pressed_char(char *c) { read(STDIN_FILENO, c, 1); }
