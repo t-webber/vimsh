@@ -1,5 +1,7 @@
+#include "execute.h"
 #include "history.h"
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,24 +9,48 @@
 /// Contains the history of entered inputs.
 static History history = {.values = NULL, .len = 0, .cap = 0};
 
+void extend_history()
+{
+        const size_t new_cap = 10 + history.cap * 2;
+        char **const new_values = malloc(new_cap * sizeof(char *));
+
+        if (new_values == NULL)
+        {
+                fprintf(stderr, "Failed to malloc.\n");
+                die = true;
+        }
+
+        for (int i = 0; i < history.len; ++i)
+                stpcpy(new_values[i], history.values[i]);
+
+        free_history();
+        history.values = new_values;
+        history.cap = new_cap;
+}
+
 void push_history(const char *const input, const size_t len)
 {
         if (history.len == history.cap)
+                extend_history();
+
+        history.values[history.len] = malloc((len + 1) * sizeof(char));
+
+        if (history.values[history.len] == NULL)
         {
-                const size_t new_cap = 10 + history.cap * 2 * sizeof(char *);
-                char **const new_values = malloc(new_cap);
-                for (int i = 0; i < history.len; ++i)
-                {
-                        stpcpy(new_values[i], history.values[i]);
-                        free(history.values[i]);
-                }
-                free(history.values);
-                history.values = new_values;
-                history.cap = new_cap;
+                fprintf(stderr, "Failed to malloc.\n");
+                die = true;
         }
-        history.values[history.len] = malloc(history.len * sizeof(char));
+
         stpcpy(history.values[history.len], input);
         history.len++;
+}
+
+void free_history()
+{
+        for (int i = 0; i < history.len; ++i)
+                free(history.values[i]);
+
+        free(history.values);
 }
 
 char *get_history(const size_t index)
