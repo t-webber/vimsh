@@ -1,9 +1,11 @@
 #include "execute.h"
+#include "history.h"
 #include "keyboard.h"
 #include "shell.h"
 #include "str.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -13,6 +15,14 @@
 #define ENTER 10 // also ctrl+
 #define ESC 27
 #define BACKSPACE 127
+
+#define UP 'A'
+#define DOWN 'B'
+#define LEFT 'D'
+#define RIGHT 'C'
+
+static size_t history_pointer = -1;
+static char current_line[] = "";
 
 void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                          size_t *len)
@@ -32,20 +42,72 @@ void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
         fprintf(debug_file, "Then %c!\n", next);
         fflush(stdout);
 
-        if (next == 'D')
+        switch (next)
+        {
+
+        case UP:
+        {
+                if (history_pointer == -1)
+                {
+                        stpcpy(current_line, line);
+                }
+
+                const char *const history = get_history(history_pointer + 1);
+
+                if (history == NULL)
+                        return;
+
+                stpcpy(line, history);
+                *len = strlen(line);
+                ++history_pointer;
+
+                return;
+        }
+
+        case DOWN:
+        {
+                if (history_pointer == -1)
+                        return;
+
+                if (history_pointer == 0)
+                {
+                        --history_pointer;
+                        stpcpy(line, current_line);
+                        return;
+                }
+
+                const char *const history = get_history(--history_pointer);
+                assert(history != NULL);
+                char *end = stpcpy(line, history);
+                assert(*end == '\0');
+                *len = strlen(line);
+
+                return;
+        }
+
+        case LEFT:
+        {
                 if (*ptr != line)
                         --*ptr;
+                return;
+        }
 
-        if (next == 'C')
+        case RIGHT:
+        {
                 if (**ptr != '\0')
                         ++*ptr;
-
-        return;
+                return;
+        }
+        }
 }
-
 void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                      size_t *len)
 {
+
+        if (c == ESC)
+                return handle_escape_press(debug_file, line, c, ptr, len);
+        history_pointer = -1;
+
         switch (c)
         {
 
@@ -63,9 +125,6 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                 *ptr = line + *len;
                 return;
         }
-
-        case ESC:
-                return handle_escape_press(debug_file, line, c, ptr, len);
 
         case ENTER:
         {

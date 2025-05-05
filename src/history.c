@@ -14,7 +14,11 @@ void push_history(const char *const input, const size_t len)
                 const size_t new_cap = 10 + history.cap * 2 * sizeof(char *);
                 char **const new_values = malloc(new_cap);
                 for (int i = 0; i < history.len; ++i)
+                {
                         stpcpy(new_values[i], history.values[i]);
+                        free(history.values[i]);
+                }
+                free(history.values);
                 history.values = new_values;
                 history.cap = new_cap;
         }
@@ -27,7 +31,14 @@ char *get_history(const size_t index)
 {
         if (index < history.len)
                 return history.values[history.len - index - 1];
+
         return NULL;
+}
+
+void print_history()
+{
+        for (int i = 0; i < history.len; ++i)
+                printf("- %s\n", history.values[i]);
 }
 
 void test_history()
