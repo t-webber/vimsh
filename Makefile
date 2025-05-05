@@ -19,6 +19,11 @@ run: debug
 watch:
 	watch -n 0.1 tail -n 10 b.txt
 
+valgrind: debug
+	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(OUT)
+	
+	
+
 test: 
 	@$(foreach f, $(TESTS), gcc $(f) $(f:.h=.c) -o $(f:.h=.out) -DTEST ; ./$(f:.h=.out);)
 
