@@ -16,6 +16,9 @@ typedef struct
 /// the given data is thus the responsability of the caller.
 void push_history(const char *const input, const size_t len);
 
+/// Frees the memory consumed by the @ref History struct.
+void free_history();
+
 /// Gets the `position`th element in history.
 ///
 /// `0` is the oldest entry, `len-1` is the newest.
