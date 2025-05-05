@@ -54,8 +54,11 @@ static void test_insert_char()
 }
 
 #ifdef TEST
+#include <stdio.h>
+
 int main()
 {
+        printf("Testing strings...\n");
         test_delete_char();
         test_insert_char();
 }

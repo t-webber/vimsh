@@ -1,10 +1,14 @@
 #include "execute.h"
 #include "keyboard.h"
+#include "shell.h"
 #include "str.h"
+#include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #define CTRL_A 1
+#define CTRL_D 4
 #define CTRL_E 5
 #define ENTER 10 // also ctrl+
 #define ESC 27
@@ -51,6 +55,9 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                 return;
         }
 
+        case CTRL_D:
+                close_shell();
+
         case CTRL_E:
         {
                 *ptr = line + *len;
@@ -63,7 +70,8 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
         case ENTER:
         {
                 printf("\r$ %s\n", line);
-                execute_command(line);
+                assert(strlen(line) == *len);
+                execute_command(line, *len);
                 *len = 0;
                 *ptr = line;
                 **ptr = '\0';
