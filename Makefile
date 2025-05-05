@@ -6,6 +6,8 @@ SRCS += src/main.c
 
 OUT = main.out
 
+TESTS := src/history.h src/str.h 
+
 all: run 
 
 debug:
@@ -18,8 +20,7 @@ watch:
 	watch -n 0.1 tail -n 10 b.txt
 
 test: 
-	gcc src/str.c -DTEST -o str_test.out
-	./str_test.out
+	@$(foreach f, $(TESTS), gcc $(f) $(f:.h=.c) -o $(f:.h=.out) -DTEST ; ./$(f:.h=.out);)
 
 clean:
 	rm -f *.out *.txt
