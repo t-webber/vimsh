@@ -79,11 +79,9 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
 
         default:
         {
-
                 ++*len;
                 insert_char(*ptr, c);
                 ++*ptr;
-
                 return;
         }
         }
