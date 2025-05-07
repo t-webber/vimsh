@@ -12,9 +12,12 @@
 #include <termios.h>
 #include <unistd.h>
 
+struct termios initial_termial_mode;
+FILE *debug_file;
+
 void run_shell()
 {
-        FILE *debug_file = fopen("b.txt", "w");
+        debug_file = fopen("b.txt", "w");
 
         char line[1000];
         char *ptr = line;
@@ -37,21 +40,15 @@ void run_shell()
 
                 handle_keypress(debug_file, line, c, &ptr, &previous_len);
 
-                if (die)
-                        break;
-
                 line[previous_len] = '\0';
                 printf("$ %s\r\033[%luC", line, ptr - line + 2);
                 fflush(stdout);
         }
-
-        fclose(debug_file);
 }
-
-struct termios initial_termial_mode;
 
 void close_shell()
 {
+        fclose(debug_file);
         printf("\n");
         tcsetattr(STDIN_FILENO, TCSANOW, &initial_termial_mode);
         exit(0);

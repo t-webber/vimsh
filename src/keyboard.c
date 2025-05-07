@@ -12,6 +12,7 @@
 #define CTRL_A 1
 #define CTRL_D 4
 #define CTRL_E 5
+#define CTRL_L 12
 #define ENTER 10 // also ctrl+
 #define ESC 27
 #define BACKSPACE 127
@@ -23,6 +24,7 @@
 
 static size_t history_pointer = -1;
 static char current_line[] = "";
+static size_t current_len = 0;
 
 void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                          size_t *len)
@@ -50,6 +52,7 @@ void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                 if (history_pointer == -1)
                 {
                         stpcpy(current_line, line);
+                        current_len = *len;
                 }
 
                 const char *const history = get_history(history_pointer + 1);
@@ -60,6 +63,7 @@ void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                 stpcpy(line, history);
                 *len = strlen(line);
                 ++history_pointer;
+                *ptr = line;
 
                 return;
         }
@@ -73,6 +77,8 @@ void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                 {
                         --history_pointer;
                         stpcpy(line, current_line);
+                        *len = current_len;
+                        *ptr = line;
                         return;
                 }
 
@@ -81,6 +87,7 @@ void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                 char *end = stpcpy(line, history);
                 assert(*end == '\0');
                 *len = strlen(line);
+                *ptr = line;
 
                 return;
         }
@@ -123,6 +130,12 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
         case CTRL_E:
         {
                 *ptr = line + *len;
+                return;
+        }
+
+        case CTRL_L:
+        {
+                printf("\033[H\033[J");
                 return;
         }
 
