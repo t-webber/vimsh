@@ -5,8 +5,7 @@
 /// Stored one element of the history.
 ///
 /// See @ref History for more information.
-typedef struct
-{
+typedef struct {
         char *value;
         size_t len;
 } HistoryInput;
@@ -14,8 +13,7 @@ typedef struct
 /// Stores the history of entered inputs.
 ///
 /// Each input submitted in the shell are stored in this data structure.
-typedef struct
-{
+typedef struct {
         HistoryInput *inputs;
         size_t len;
         size_t cap;
@@ -28,7 +26,7 @@ typedef struct
 void push_history(const char *const input, const size_t len);
 
 /// Frees the memory consumed by the @ref History struct.
-void free_history();
+void free_history(void);
 
 /// Gets the `position`th element in history.
 ///
@@ -36,4 +34,4 @@ void free_history();
 char *get_history(const size_t index);
 
 /// Print the whole content of history.
-void print_history();
+void print_history(void);
