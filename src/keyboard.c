@@ -28,6 +28,49 @@ static size_t history_pointer = -1;
 static char current_line[] = "";
 static size_t current_len = 0;
 
+void handle_ctrl_arrow_press(FILE *debug_file, char *const line, char **ptr,
+                             size_t *len)
+{
+        char next;
+        read_pressed_char(&next);
+        fprintf(debug_file, "1. Then %c!\n", next);
+        if (next != ';')
+                return;
+
+        read_pressed_char(&next);
+        fprintf(debug_file, "2. Then %c!\n", next);
+        if (next != '5')
+                return;
+
+        read_pressed_char(&next);
+        fprintf(debug_file, "3. Then %c!\n", next);
+
+        switch (next)
+        {
+        case LEFT:
+        {
+
+                fprintf(debug_file, "Ctrl+Left\n");
+                if (*ptr == line)
+                        return;
+                --*ptr;
+                while (*ptr != line && **ptr != ' ')
+                        --*ptr;
+                return;
+        }
+
+        case RIGHT:
+        {
+                fprintf(debug_file, "Ctrl+Right\n");
+                if (**ptr == '\0')
+                        return;
+                ++*ptr;
+                while (**ptr != '\0' && **ptr != ' ')
+                        ++*ptr;
+        }
+        }
+}
+
 void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
                          size_t *len)
 {
@@ -36,18 +79,21 @@ void handle_escape_press(FILE *debug_file, char *const line, char c, char **ptr,
         char next;
         read_pressed_char(&next);
 
-        fprintf(debug_file, "Then %c!\n", next);
+        fprintf(debug_file, "a. Then %c!\n", next);
 
         if (next != '[')
                 return;
 
         read_pressed_char(&next);
 
-        fprintf(debug_file, "Then %c!\n", next);
+        fprintf(debug_file, "b. Then %c!\n", next);
         fflush(stdout);
 
         switch (next)
         {
+
+        case '1':
+                return handle_ctrl_arrow_press(debug_file, line, ptr, len);
 
         case UP:
         {
