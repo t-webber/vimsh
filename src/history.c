@@ -1,5 +1,5 @@
 #include "history.h"
-#include <assert.h>
+#include "macros.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,10 +12,7 @@ static void extend_history(void) {
         const size_t new_cap = 1 + history.cap * 2;
         HistoryInput *const new_inputs = malloc(new_cap * sizeof(HistoryInput));
 
-        if (new_inputs == NULL) {
-                fprintf(stderr, "Failed to malloc.\n");
-                exit(1);
-        }
+        assert(new_inputs != NULL);
 
         for (size_t i = 0; i < history.len; ++i) {
                 const HistoryInput input = history.inputs[i];
@@ -49,10 +46,7 @@ void push_history(const char *const input, const size_t len) {
         history.inputs[history.len].value = malloc((len + 1) * sizeof(char));
         history.inputs[history.len].len = len;
 
-        if (history.inputs[history.len].value == NULL) {
-                fprintf(stderr, "Failed to malloc.\n");
-                exit(1);
-        }
+        assert(history.inputs[history.len].value != NULL);
 
         stpcpy(history.inputs[history.len].value, input);
 

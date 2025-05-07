@@ -1,5 +1,6 @@
 #include "execute.h"
 #include "history.h"
+#include "shell.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +26,7 @@ void execute_command(char *const user_input, const size_t len) {
         push_history(user_input, len);
 
         if (strncmp("exit", user_input, 4) == 0)
-                exit(1);
+                close_shell();
 
         else if (strncmp("cd", user_input, 2) == 0)
                 cd(user_input);
