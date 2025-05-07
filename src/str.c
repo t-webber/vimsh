@@ -1,19 +1,15 @@
 #include "str.h"
 #include <assert.h>
-#include <string.h>
 
-void delete_char(char *const delete_position)
-{
+void delete_char(char *const delete_position) {
         for (char *reader = delete_position; *reader != '\0'; ++reader)
                 *reader = *(reader + 1);
 }
 
-void insert_char(char *const insert_position, char c)
-{
+void insert_char(char *const insert_position, char c) {
         char next = *insert_position, current = 1, *shifter = insert_position;
 
-        while (current != '\0')
-        {
+        while (current != '\0') {
                 current = next;
                 next = *++shifter;
                 *shifter = current;
@@ -22,9 +18,12 @@ void insert_char(char *const insert_position, char c)
         *insert_position = c;
 }
 
+#ifdef TEST
+#include <stdio.h>
+#include <string.h>
+
 /// Tests the @ref delete_char function
-static void test_delete_char()
-{
+static void test_delete_char(void) {
         char string[] = "#Hello, world!";
         delete_char(string);
         delete_char(string + 5);
@@ -38,8 +37,7 @@ static void test_delete_char()
 }
 
 /// Tests the @ref insert_char function.
-static void test_insert_char()
-{
+static void test_insert_char(void) {
         char string[20] = "Hello world";
         insert_char(string + 5, ',');
         insert_char(string + 6, '-');
@@ -53,11 +51,7 @@ static void test_insert_char()
         assert(strcmp(empty, "!") == 0);
 }
 
-#ifdef TEST
-#include <stdio.h>
-
-int main()
-{
+int main() {
         printf("Testing strings...\n");
         test_delete_char();
         test_insert_char();

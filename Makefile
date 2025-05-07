@@ -1,17 +1,25 @@
 .PHONY: all watch run test debug clean
 
-HDRS  = $(shell find src/ | grep "\.h" )
-SRCS  = $(HDRS:.h=.c)
+HDRS = $(shell find src/ | grep "\.h" )
+SRCS = $(HDRS:.h=.c)
 SRCS += src/main.c
 
 OUT = main.out
 
 TESTS := src/history.h src/str.h 
 
+
+CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wformat=2 \
+         -Wcast-align -Wstrict-overflow=5 -Wundef -Wswitch-default -Wswitch-enum \
+         -Wfloat-equal -Wcast-qual -Wbad-function-cast -Wwrite-strings -Wmissing-declarations \
+         -Wmissing-prototypes -Wnested-externs -Wlogical-op -Wduplicated-cond -Wduplicated-branches \
+         -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wvla -Wstack-protector
+
 all: run 
 
 debug:
-	gcc -g $(SRCS) -o $(OUT) 
+	clear
+	gcc -g $(CFLAGS) $(SRCS) -o $(OUT) 
 
 run: debug
 	./$(OUT)
@@ -22,10 +30,11 @@ watch:
 valgrind: debug
 	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(OUT)
 	
-	
+gdb: debug
+	gdb ./$(OUT)
 
 test: 
-	@$(foreach f, $(TESTS), gcc $(f) $(f:.h=.c) -o $(f:.h=.out) -DTEST ; ./$(f:.h=.out);)
+	@$(foreach f, $(TESTS), gcc $(CFLAGS) $(f:.h=.c) -o $(f:.h=.out) -DTEST ; ./$(f:.h=.out);)
 
 clean:
 	rm -f *.out *.txt

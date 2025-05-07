@@ -14,8 +14,7 @@
 struct termios initial_termial_mode;
 FILE *debug_file;
 
-void run_shell()
-{
+void run_shell(void) {
         debug_file = fopen("b.txt", "w");
 
         char line[1000];
@@ -27,8 +26,7 @@ void run_shell()
         printf("$ ");
         fflush(stdout);
 
-        while (1)
-        {
+        while (1) {
                 read_pressed_char(&c);
 
                 fprintf(debug_file, ">>> %c (%d)\n", c, c);
@@ -44,23 +42,24 @@ void run_shell()
         }
 }
 
-void close_shell()
-{
+void close_shell(void) {
         fclose(debug_file);
         printf("\n");
         tcsetattr(STDIN_FILENO, TCSANOW, &initial_termial_mode);
         exit(0);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void ctrl_c_handler(int x) { close_shell(); }
+#pragma GCC diagnostic pop
 
-void open_shell()
-{
+void open_shell(void) {
         tcgetattr(STDIN_FILENO, &initial_termial_mode);
 
         struct termios current_terminal_mode;
         current_terminal_mode = initial_termial_mode;
-        current_terminal_mode.c_lflag &= ~(ICANON | ECHO);
+        current_terminal_mode.c_lflag &= ~(tcflag_t)(ICANON | ECHO);
         tcsetattr(STDIN_FILENO, TCSANOW, &current_terminal_mode);
 
         signal(SIGINT, ctrl_c_handler);
