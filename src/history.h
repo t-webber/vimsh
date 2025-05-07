@@ -2,10 +2,21 @@
 
 #include <stddef.h>
 
-/// Stores the history of entered inputs.
+/// Stored one element of the history.
+///
+/// See @ref History for more information.
 typedef struct
 {
-        char **values;
+        char *value;
+        size_t len;
+} HistoryInput;
+
+/// Stores the history of entered inputs.
+///
+/// Each input submitted in the shell are stored in this data structure.
+typedef struct
+{
+        HistoryInput *inputs;
         size_t len;
         size_t cap;
 } History;
