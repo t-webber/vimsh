@@ -1,9 +1,9 @@
 #include "execute.h"
 #include "history.h"
 #include "keyboard.h"
+#include "macros.h"
 #include "shell.h"
 #include "str.h"
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
