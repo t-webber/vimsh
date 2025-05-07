@@ -1,5 +1,4 @@
 #include "display.h"
-#include "execute.h"
 #include "keyboard.h"
 #include "shell.h"
 #include <assert.h>
@@ -30,7 +29,6 @@ void run_shell()
 
         while (1)
         {
-
                 read_pressed_char(&c);
 
                 fprintf(debug_file, ">>> %c (%d)\n", c, c);
