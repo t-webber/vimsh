@@ -1,7 +1,7 @@
 #include "display.h"
 #include "keyboard.h"
+#include "macros.h"
 #include "shell.h"
-#include <assert.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdbool.h>

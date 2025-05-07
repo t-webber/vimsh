@@ -1,5 +1,5 @@
+#include "macros.h"
 #include "str.h"
-#include <assert.h>
 
 void delete_char(char *const delete_position) {
         for (char *reader = delete_position; *reader != '\0'; ++reader)

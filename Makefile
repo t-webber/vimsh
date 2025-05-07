@@ -1,6 +1,6 @@
 .PHONY: all watch run test debug clean
 
-HDRS = $(shell find src/ | grep "\.h" )
+HDRS = $(shell find src/ | grep "\.h" | grep -v macros )
 SRCS = $(HDRS:.h=.c)
 SRCS += src/main.c
 
