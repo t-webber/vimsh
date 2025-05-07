@@ -12,8 +12,10 @@
 #define CTRL_A 1
 #define CTRL_D 4
 #define CTRL_E 5
-#define CTRL_L 12
 #define ENTER 10 // also ctrl+
+#define CTRL_K 11
+#define CTRL_L 12
+#define CTRL_U 21
 #define ESC 27
 #define BACKSPACE 127
 
@@ -133,9 +135,20 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                 return;
         }
 
-        case CTRL_L:
+        case CTRL_K:
         {
-                printf("\033[H\033[J");
+                **ptr = '\0';
+                *len = *ptr - line;
+                break;
+        }
+
+        case CTRL_L:
+                return (void)printf("\033[H\033[J");
+
+        case CTRL_U:
+        {
+                char *end = stpcpy(line, *ptr);
+                *len = end - line;
                 return;
         }
 
