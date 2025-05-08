@@ -67,8 +67,6 @@ void print_history(void) {
 
 #ifdef TEST
 static void test_history(void) {
-        printf("Testing history...\n");
-
         assert(get_history(0) == NULL);
         assert(get_history(1) == NULL);
         assert(get_history(2) == NULL);

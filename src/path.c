@@ -68,14 +68,19 @@ ExecutableList get_executables(void) {
         panic("Failed to read path");
 }
 
+Executable *find_with_prefix(const ExecutableList *const list,
+                             const char *const prefix,
+                             const size_t prefix_len) {
+        for (size_t i = 0; i < list->len; ++i) {
+                if (strncmp(prefix, list->values[i].name, prefix_len) == 0) {
+                        return &list->values[i];
+                }
+        }
+        return NULL;
+}
+
 #ifdef TEST
-#define log2(x) printf("%s => %d\n", #x, x);
-
-int main(void) {
-        printf("Testing completions...\n");
-
-        ExecutableList list = get_executables();
-
+static void count_executables(ExecutableList *list) {
         const char *const command =
             "echo $PATH | sed 's/:/\\n/g' | grep -v ^$  | xargs ls -lA | grep "
             "^-  | awk '{print $NF}' | sort -n | uniq | wc -l";
@@ -88,6 +93,40 @@ int main(void) {
         char line[16];
         fgets(line, 16, find);
         size_t expected = (size_t)atoi(line) + 1;
-        assert(expected == list.len);
+        assert(expected == list->len);
+}
+
+static void check_exact_completion(ExecutableList *list,
+                                   const char *const prefix,
+                                   const size_t prefix_len,
+                                   const char *const path, const char *name) {
+        const Executable *const exec =
+            find_with_prefix(list, prefix, prefix_len);
+        if (exec == NULL)
+                panic("None found for %s.\n", prefix);
+
+        if (strcmp(exec->name, name))
+                panic("expected %s but found %s.\n", name, exec->name);
+        if (strcmp(exec->path, path))
+                panic("expected %s but found %s for exec %s.\n", path,
+                      exec->path, name);
+}
+
+static void check_completion(ExecutableList *list) {
+        check_exact_completion(list, "rustu", 5,
+                               "/home/b/.files/.apps/cargo/bin", "rustup");
+        check_exact_completion(list, "ala", 3, "/usr/bin", "alacritty");
+        check_exact_completion(list, "bra", 3, "/usr/bin", "brave");
+        check_exact_completion(list, "xe", 2, "/usr/bin", "xev");
+        check_exact_completion(list, "prof", 4, "/home/b/.files/.cmd",
+                               "profile");
+        assert(find_with_prefix(list, "ab", 2) == NULL);
+        assert(find_with_prefix(list, "abc", 3) == NULL);
+}
+
+int main(void) {
+        ExecutableList list = get_executables();
+        count_executables(&list);
+        check_completion(&list);
 }
 #endif

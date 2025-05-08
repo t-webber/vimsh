@@ -6,7 +6,6 @@ SRCS += src/main.c
 
 OUT = main.out
 
-
 TESTS := src/history.c src/str.c
 ifndef GITHUB
 TESTS += src/path.c
@@ -39,11 +38,10 @@ gdb: debug
 	gdb ./$(OUT)
 
 test: $(TESTS)
-	@$(foreach f, $(TESTS), gcc $(CFLAGS) $(f) -o $(f:.c=.out) -DTEST ; ./$(f:.c=.out);)
+	@$(foreach f, $(TESTS), gcc $(CFLAGS) $(f) -o $(f:.c=.out) -DTEST ; echo Testing $(f)... ; ./$(f:.c=.out);)
 
 valgrind-test: $(TESTS)
 	@$(foreach f, $(TESTS), DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(f:.c=.out); )
 	
-
 clean:
 	rm -f *.out *.txt src/*.out
