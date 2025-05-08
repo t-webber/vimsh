@@ -28,27 +28,25 @@ static size_t history_pointer = -1UL;
 static char current_line[] = "";
 static size_t current_len = 0;
 
-static void handle_ctrl_arrow_press(FILE *debug_file, char *const line,
-                                    char **ptr) {
+static void handle_ctrl_arrow_press(char *const line, char **ptr) {
         char next;
         read_pressed_char(&next);
-        fprintf(debug_file, "1. Then %c!\n", next);
+        log("1. Then %c!\n", next);
         if (next != ';')
                 return;
 
         read_pressed_char(&next);
-        fprintf(debug_file, "2. Then %c!\n", next);
+        log("2. Then %c!\n", next);
         if (next != '5')
                 return;
 
         read_pressed_char(&next);
-        fprintf(debug_file, "3. Then %c!\n", next);
+        log("3. Then %c!\n", next);
 
         switch (next) {
 
         case LEFT: {
-
-                fprintf(debug_file, "Ctrl+Left\n");
+                log("Ctrl+Left\n");
                 if (*ptr == line)
                         return;
                 --*ptr;
@@ -58,7 +56,7 @@ static void handle_ctrl_arrow_press(FILE *debug_file, char *const line,
         }
 
         case RIGHT: {
-                fprintf(debug_file, "Ctrl+Right\n");
+                log("Ctrl+Right\n");
                 if (**ptr == '\0')
                         return;
                 ++*ptr;
@@ -72,27 +70,30 @@ static void handle_ctrl_arrow_press(FILE *debug_file, char *const line,
         }
 }
 
-static void handle_escape_press(FILE *debug_file, char *const line, char **ptr,
-                                size_t *len) {
-        fprintf(debug_file, "Escaped!\n");
+static void handle_escape_press(char *const line, char **ptr, size_t *len) {
+        log("Escaped!\n");
 
         char next;
         read_pressed_char(&next);
 
-        fprintf(debug_file, "a. Then %c!\n", next);
+        log("a. Then %c!\n", next);
 
-        if (next != '[')
+        if (next != '[') {
+                if (next != 'd')
+                        return;
+
+                log("d!!\n");
                 return;
+        }
 
         read_pressed_char(&next);
 
-        fprintf(debug_file, "b. Then %c!\n", next);
-        fflush(stdout);
+        log("b. Then %c!\n", next);
 
         switch (next) {
 
         case '1':
-                handle_ctrl_arrow_press(debug_file, line, ptr);
+                handle_ctrl_arrow_press(line, ptr);
                 return;
 
         case UP: {
@@ -154,11 +155,10 @@ static void handle_escape_press(FILE *debug_file, char *const line, char **ptr,
                 return;
         }
 }
-void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
-                     size_t *len) {
+void handle_keypress(char *const line, char c, char **ptr, size_t *len) {
 
         if (c == ESC) {
-                handle_escape_press(debug_file, line, ptr, len);
+                handle_escape_press(line, ptr, len);
                 return;
         };
 

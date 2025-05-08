@@ -29,12 +29,11 @@ void run_shell(void) {
         while (1) {
                 read_pressed_char(&c);
 
-                fprintf(debug_file, ">>> %c (%d)\n", c, c);
-                fflush(debug_file);
+                log(">>> %c (%d)\n", c, c);
 
                 clear_line(previous_len + 2);
 
-                handle_keypress(debug_file, line, c, &ptr, &previous_len);
+                handle_keypress(line, c, &ptr, &previous_len);
 
                 line[previous_len] = '\0';
                 printf("$ %s\r\033[%luC", line, ptr - line + 2);
@@ -51,7 +50,8 @@ void close_shell(void) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-void ctrl_c_handler(int x) { close_shell(); }
+/// Handler for the Ctrl+C keybinding.
+static void ctrl_c_handler(int x) { close_shell(); }
 #pragma GCC diagnostic pop
 
 void open_shell(void) {

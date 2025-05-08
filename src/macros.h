@@ -3,9 +3,15 @@
 #ifdef TEST
 #include <stdlib.h>
 #define DIE exit(1);
+#define log(...) printf(__VA_ARGS__);
 #else
 #include "shell.h"
 #define DIE close_shell();
+#define log(...)                                                               \
+        {                                                                      \
+                fprintf(debug_file, __VA_ARGS__);                              \
+                fflush(debug_file);                                            \
+        }
 #endif
 
 #define panic(...)                                                             \
