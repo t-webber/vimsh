@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 #ifdef TEST
 #include <stdlib.h>
 #define DIE exit(1);
@@ -17,7 +19,7 @@
 #define panic(...)                                                             \
         {                                                                      \
                 fprintf(stderr, __VA_ARGS__);                                  \
-                DIE                                                            \
+                DIE exit(9); /**unreachable*/                                  \
         }
 
 #define assert(expr)                                                           \

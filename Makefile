@@ -6,20 +6,25 @@ SRCS += src/main.c
 
 OUT = main.out
 
-TESTS := src/history.h src/str.h 
 
+TESTS := src/history.c src/str.c
+ifndef GITHUB
+TESTS += src/path.c
+endif
 
-CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wformat=2 \
+TESTOUT = $(TESTS:.c=.out)
+
+CFLAGS = -g -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wformat=2 \
          -Wcast-align -Wstrict-overflow=5 -Wundef -Wswitch-default -Wswitch-enum \
          -Wfloat-equal -Wcast-qual -Wbad-function-cast -Wwrite-strings -Wmissing-declarations \
          -Wmissing-prototypes -Wnested-externs -Wlogical-op -Wduplicated-cond -Wduplicated-branches \
          -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wvla -Wstack-protector
 
-all: run 
+all: run
 
 debug:
 	clear
-	gcc -g $(CFLAGS) $(SRCS) -o $(OUT) 
+	gcc $(CFLAGS) $(SRCS) -o $(OUT) 
 
 run: debug
 	./$(OUT)
@@ -29,12 +34,16 @@ watch:
 
 valgrind: debug
 	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(OUT)
-	
+
 gdb: debug
 	gdb ./$(OUT)
 
-test: 
-	@$(foreach f, $(TESTS), gcc $(CFLAGS) $(f:.h=.c) -o $(f:.h=.out) -DTEST ; ./$(f:.h=.out);)
+test: $(TESTS)
+	@$(foreach f, $(TESTS), gcc $(CFLAGS) $(f) -o $(f:.c=.out) -DTEST ; ./$(f:.c=.out);)
+
+valgrind-test: $(TESTS)
+	@$(foreach f, $(TESTS), DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(f:.c=.out); )
+	
 
 clean:
-	rm -f *.out *.txt
+	rm -f *.out *.txt src/*.out
