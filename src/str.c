@@ -52,7 +52,6 @@ static void test_insert_char(void) {
 }
 
 int main() {
-        printf("Testing strings...\n");
         test_delete_char();
         test_insert_char();
 }

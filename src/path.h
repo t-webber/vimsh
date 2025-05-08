@@ -28,3 +28,7 @@ char *find_executable(const ExecutableList *const list,
 
 /// Free the memory consumed by the @get_executables function.
 void free_executables(ExecutableList *list);
+
+/// Find the first executable acessible whose name begins with the given prefix.
+Executable *find_with_prefix(const ExecutableList *const list,
+                             const char *const prefix, const size_t len);
