@@ -1,4 +1,5 @@
 #include "display.h"
+#include "execute.h"
 #include "keyboard.h"
 #include "macros.h"
 #include "path.h"
@@ -66,6 +67,7 @@ static void ctrl_c_handler(int x) { close_shell(); }
 void open_shell(void) {
         debug_file = fopen("b.txt", "w");
         initialise_executables();
+        initialise_home();
 
         tcgetattr(STDIN_FILENO, &initial_termial_mode);
 

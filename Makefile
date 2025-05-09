@@ -13,7 +13,7 @@ endif
 
 TESTOUT = $(TESTS:.c=.out)
 
-CFLAGS = -g -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wformat=2 \
+CFLAGS = -p -g -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion -Wformat=2 \
          -Wcast-align -Wstrict-overflow=5 -Wundef -Wswitch-default -Wswitch-enum \
          -Wfloat-equal -Wcast-qual -Wbad-function-cast -Wwrite-strings -Wmissing-declarations \
          -Wmissing-prototypes -Wnested-externs -Wlogical-op -Wduplicated-cond -Wduplicated-branches \

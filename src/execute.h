@@ -8,3 +8,6 @@ extern bool die;
 
 /// Executes a command entered in the input.
 void execute_command(char *const user_input, const size_t len);
+
+/// Initialises the HOME variable to replace ~ later
+char *initialise_home(void);

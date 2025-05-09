@@ -29,3 +29,5 @@
                 panic("Assert %s failed at %s:%d (function %s)", #expr,        \
                       __FILE__, __LINE__, __func__);                           \
         }
+
+#define eprint(...) fprintf(stderr, __VA_ARGS__)
