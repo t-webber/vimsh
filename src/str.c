@@ -21,11 +21,11 @@ void insert_char(char *const insert_position, char c) {
 }
 
 void push_string(String *str, char ch) {
-        if (str->cap == str->len) {
+        if (str->cap <= str->len + 1) {
                 size_t new_cap = 10 + str->cap * 2;
                 char *new_value = malloc(new_cap * sizeof(char));
-                stpcpy(new_value, str->value);
                 if (str->value != NULL) {
+                        stpcpy(new_value, str->value);
                         free(str->value);
                 }
                 str->value = new_value;
@@ -33,6 +33,7 @@ void push_string(String *str, char ch) {
         }
 
         str->value[str->len++] = ch;
+        str->value[str->len] = '\0';
 }
 
 #ifdef TEST
@@ -60,7 +61,9 @@ static void test_grow_string(void) {
         const char *const helloworld = "Hello, world!";
         assert(s.len == strlen(helloworld));
         assert(s.cap == 30);
-        assert(strcmp(s.value, helloworld));
+        assert(strcmp(s.value, helloworld) == 0);
+
+        free(s.value);
 }
 
 /// Tests the @ref delete_char function

@@ -46,6 +46,7 @@ static void find_executables_in_path(ExecutableList *list, char *path) {
                             list, (Executable){.name = name, .path = path});
                 }
         }
+        closedir(d);
 }
 
 static ExecutableList get_executables(void) {
@@ -71,6 +72,30 @@ static ExecutableList get_executables(void) {
 static ExecutableList executable_list;
 
 void initialise_executables(void) { executable_list = get_executables(); }
+
+void free_executables(void) {
+        char **paths = malloc(sizeof(char *) * executable_list.len);
+        size_t paths_len = 0;
+        for (size_t i = 0; i < executable_list.len; ++i) {
+                free(executable_list.values[i].name);
+                char *path = executable_list.values[i].path;
+
+                bool already_taken = false;
+                for (size_t j = 0; j < paths_len; ++j)
+                        if (path == paths[j]) {
+                                already_taken = true;
+                                break;
+                        }
+                if (!already_taken)
+                        paths[paths_len++] = path;
+        }
+
+        for (size_t i = 0; i < paths_len; ++i)
+                free(paths[i]);
+
+        free(paths);
+        free(executable_list.values);
+}
 
 Executable *find_one_with_prefix(const char *const prefix,
                                  const size_t prefix_len) {
@@ -98,6 +123,8 @@ static void count_executables(void) {
         fgets(line, 16, find);
         size_t expected = (size_t)atoi(line) + 1;
         assert(expected == executable_list.len);
+
+        pclose(find);
 }
 
 static void check_exact_completion(const char *const prefix,
@@ -129,5 +156,6 @@ int main(void) {
         initialise_executables();
         count_executables();
         check_completion();
+        free_executables();
 }
 #endif

@@ -17,8 +17,8 @@ typedef struct {
         size_t cap;
 } ExecutableList;
 
-/// Free the memory consumed by the @get_executables function.
-void free_executables(ExecutableList *list);
+/// Free the memory consumed by the @ref initialise_executables function.
+void free_executables(void);
 
 /// Find the first executable acessible whose name begins with the given prefix.
 Executable *find_one_with_prefix(const char *const prefix, const size_t len);

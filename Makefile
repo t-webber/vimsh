@@ -32,16 +32,17 @@ watch:
 	watch -n 0.1 tail -n 10 b.txt
 
 valgrind: debug
-	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(OUT)
+	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --show-leak-kinds=all --leak-check=full ./$(OUT)
 
 gdb: debug
 	gdb ./$(OUT)
 
 test: $(TESTS)
-	@$(foreach f, $(TESTS), gcc $(CFLAGS) $(f) -o $(f:.c=.out) -DTEST ; echo Testing $(f)... ; ./$(f:.c=.out);)
+	$(foreach f, $(TESTS), gcc $(CFLAGS) $(f) -o $(f:.c=.out) -DTEST ; echo Testing $(f)... ; ./$(f:.c=.out);)
 
-valgrind-test: $(TESTS)
-	@$(foreach f, $(TESTS), DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind ./$(f:.c=.out); )
+valgrindtest: test
+	$(foreach f, $(TESTS), echo -e "===============================\n===============================\n>>>>> Running valgrind for $(f)..." ; DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --leak-check=full --show-leak-kinds=all ./$(f:.c=.out); )
+	
 	
 clean:
-	rm -f *.out *.txt src/*.out
+	rm -f *.out *.txt src/*.out vgcore.*

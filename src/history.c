@@ -9,14 +9,15 @@
 static History history = {.inputs = NULL, .len = 0, .cap = 0};
 
 static void extend_history(void) {
-        const size_t new_cap = 1 + history.cap * 2;
+        const size_t new_cap = 10 + history.cap * 2;
         HistoryInput *const new_inputs = malloc(new_cap * sizeof(HistoryInput));
 
         assert(new_inputs != NULL);
 
         for (size_t i = 0; i < history.len; ++i) {
                 const HistoryInput input = history.inputs[i];
-                char *const new_value = malloc(input.len * sizeof(char));
+                char *const new_value = malloc((input.len + 1) * sizeof(char));
+
                 stpcpy(new_value, input.value);
                 const HistoryInput new_input = {.value = new_value,
                                                 .len = input.len};
@@ -89,6 +90,8 @@ static void test_history(void) {
         assert(strcmp(two, get_history(2)) == 0);
         assert(strcmp(one, get_history(3)) == 0);
         assert(get_history(4) == NULL);
+
+        free_history();
 }
 
 int main() { test_history(); }
