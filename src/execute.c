@@ -1,10 +1,31 @@
 #include "execute.h"
 #include "history.h"
+#include "macros.h"
 #include "shell.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+static char *home_path = NULL;
+
+char *initialise_home(void) {
+        if (home_path == NULL) {
+                home_path = getenv("HOME");
+        }
+
+        return home_path;
+}
+
+static void safe_chdir(const char *const path) {
+        int x = chdir(path);
+        if (x == 0)
+                return;
+        else if (x == -1)
+                eprint("cd: %s: No such file or directory.\n", path);
+        else
+                panic("Failed to cd to %s with error %d", path, x);
+}
 
 static void cd(char *const user_input) {
         bool has_path = false;
@@ -13,12 +34,15 @@ static void cd(char *const user_input) {
                 if (*reader != ' ')
                         has_path = true;
 
-        if (has_path) {
-                chdir(user_input + 3);
+        if (!has_path) {
+                safe_chdir(home_path);
                 return;
         }
 
-        chdir(getenv("HOME"));
+        char resolved_path[128];
+
+        // TODO: ~, prefix and infix
+        safe_chdir(user_input + 3);
 }
 
 void execute_command(char *const user_input, const size_t len) {
