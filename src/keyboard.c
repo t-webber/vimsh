@@ -158,7 +158,8 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                 return;
         }
 }
-void handle_keypress(char *const line, char c, char **ptr, size_t *len) {
+void handle_keypress(char *const line, char c, char **ptr, size_t *len,
+                     const char *const ps1) {
 
         if (c == ESC) {
                 handle_escape_press(line, ptr, len);
@@ -208,7 +209,7 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len) {
         }
 
         case ENTER:
-                printf("\r$ %s\n", line);
+                printf("\r%s%s\n", ps1, line);
                 assert(strlen(line) == *len);
                 execute_command(line, *len);
                 *len = 0;

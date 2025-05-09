@@ -2,6 +2,7 @@
 #include "keyboard.h"
 #include "macros.h"
 #include "path.h"
+#include "ps1.h"
 #include "shell.h"
 #include <pthread.h>
 #include <signal.h>
@@ -23,7 +24,11 @@ void run_shell(void) {
         char c;
         size_t previous_len = 0;
 
-        printf("$ ");
+        char ps1[32];
+        get_ps1(ps1);
+        const size_t ps1_len = strlen(ps1);
+
+        printf("%s", ps1);
         fflush(stdout);
 
         while (1) {
@@ -31,12 +36,13 @@ void run_shell(void) {
 
                 log(">>> %c (%d)\n", c, c);
 
-                clear_line(previous_len + 2);
+                clear_line(previous_len + ps1_len);
 
-                handle_keypress(line, c, &ptr, &previous_len);
+                handle_keypress(line, c, &ptr, &previous_len, ps1);
 
                 line[previous_len] = '\0';
-                printf("$ %s\r\033[%luC", line, ptr - line + 2);
+                printf("%s%s\r\033[%luC", ps1, line,
+                       (size_t)(ptr - line) + ps1_len);
                 fflush(stdout);
         }
 }
