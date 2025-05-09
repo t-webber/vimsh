@@ -26,7 +26,7 @@ void run_shell(void) {
 
         char ps1[32];
         get_ps1(ps1);
-        const size_t ps1_len = strlen(ps1);
+        size_t ps1_len = strlen(ps1);
 
         printf("%s", ps1);
         fflush(stdout);
@@ -39,8 +39,11 @@ void run_shell(void) {
                 clear_line(previous_len + ps1_len);
 
                 handle_keypress(line, c, &ptr, &previous_len, ps1);
-
                 line[previous_len] = '\0';
+
+                get_ps1(ps1);
+                ps1_len = strlen(ps1);
+
                 printf("%s%s\r\033[%luC", ps1, line,
                        (size_t)(ptr - line) + ps1_len);
                 fflush(stdout);
