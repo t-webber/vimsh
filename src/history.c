@@ -36,6 +36,9 @@ void free_history(void) {
 }
 
 void push_history(const char *const input, const size_t len) {
+        if (len == 0)
+                return;
+
         if (history.len == history.cap)
                 extend_history();
 

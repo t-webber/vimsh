@@ -113,7 +113,7 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                 stpcpy(line, history);
                 *len = strlen(line);
                 ++history_pointer;
-                *ptr = line;
+                *ptr = line + *len;
 
                 return;
         }
@@ -126,7 +126,7 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                         --history_pointer;
                         stpcpy(line, current_line);
                         *len = current_len;
-                        *ptr = line;
+                        *ptr = line + *len;
                         return;
                 }
 
@@ -137,7 +137,7 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                 assert(*end == '\0');
 
                 *len = strlen(line);
-                *ptr = line;
+                *ptr = line + *len;
 
                 return;
         }
