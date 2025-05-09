@@ -9,13 +9,13 @@
 
 static char *home_path = NULL;
 
-char *initialise_home(void) {
+void initialise_home(void) {
         if (home_path == NULL) {
                 home_path = getenv("HOME");
         }
-
-        return home_path;
 }
+
+void free_home(void) { free(home_path); }
 
 static void safe_chdir(const char *const path) {
         int x = chdir(path);

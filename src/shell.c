@@ -53,6 +53,8 @@ void run_shell(void) {
 
 void close_shell(void) {
         fclose(debug_file);
+        free_executables();
+        free_home();
         printf("\n");
         tcsetattr(STDIN_FILENO, TCSANOW, &initial_termial_mode);
         exit(0);
