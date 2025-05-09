@@ -1,6 +1,7 @@
 #include "display.h"
 #include "keyboard.h"
 #include "macros.h"
+#include "path.h"
 #include "shell.h"
 #include <pthread.h>
 #include <signal.h>
@@ -15,7 +16,6 @@ struct termios initial_termial_mode;
 FILE *debug_file;
 
 void run_shell(void) {
-        debug_file = fopen("b.txt", "w");
 
         char line[1000];
         char *ptr = line;
@@ -55,6 +55,9 @@ static void ctrl_c_handler(int x) { close_shell(); }
 #pragma GCC diagnostic pop
 
 void open_shell(void) {
+        debug_file = fopen("b.txt", "w");
+        initialise_executables();
+
         tcgetattr(STDIN_FILENO, &initial_termial_mode);
 
         struct termios current_terminal_mode;

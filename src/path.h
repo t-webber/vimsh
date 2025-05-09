@@ -17,18 +17,11 @@ typedef struct {
         size_t cap;
 } ExecutableList;
 
-/// Compute the list of executables.
-///
-/// See @ref ExecutableList
-ExecutableList get_executables(void);
-
-/// Find the path of an executable with only its name.
-char *find_executable(const ExecutableList *const list,
-                      const char *const program);
-
 /// Free the memory consumed by the @get_executables function.
 void free_executables(ExecutableList *list);
 
 /// Find the first executable acessible whose name begins with the given prefix.
-Executable *find_with_prefix(const ExecutableList *const list,
-                             const char *const prefix, const size_t len);
+Executable *find_one_with_prefix(const char *const prefix, const size_t len);
+
+/// Compute all the accessible executables through PATH
+void initialise_executables(void);
