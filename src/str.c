@@ -1,5 +1,7 @@
 #include "macros.h"
 #include "str.h"
+#include <stdlib.h>
+#include <string.h>
 
 void delete_char(char *const delete_position) {
         for (char *reader = delete_position; *reader != '\0'; ++reader)
@@ -18,9 +20,48 @@ void insert_char(char *const insert_position, char c) {
         *insert_position = c;
 }
 
+void push_string(String *str, char ch) {
+        if (str->cap == str->len) {
+                size_t new_cap = 10 + str->cap * 2;
+                char *new_value = malloc(new_cap * sizeof(char));
+                stpcpy(new_value, str->value);
+                if (str->value != NULL) {
+                        free(str->value);
+                }
+                str->value = new_value;
+                str->cap = new_cap;
+        }
+
+        str->value[str->len++] = ch;
+}
+
 #ifdef TEST
 #include <stdio.h>
 #include <string.h>
+
+/// Tests the logic on the @ref String struct.
+static void test_grow_string(void) {
+        String s = {.cap = 0, .len = 0, .value = NULL};
+
+        push_string(&s, 'H');
+        push_string(&s, 'e');
+        push_string(&s, 'l');
+        push_string(&s, 'l');
+        push_string(&s, 'o');
+        push_string(&s, ',');
+        push_string(&s, ' ');
+        push_string(&s, 'w');
+        push_string(&s, 'o');
+        push_string(&s, 'r');
+        push_string(&s, 'l');
+        push_string(&s, 'd');
+        push_string(&s, '!');
+
+        const char *const helloworld = "Hello, world!";
+        assert(s.len == strlen(helloworld));
+        assert(s.cap == 30);
+        assert(strcmp(s.value, helloworld));
+}
 
 /// Tests the @ref delete_char function
 static void test_delete_char(void) {
@@ -53,6 +94,7 @@ static void test_insert_char(void) {
 
 int main() {
         test_delete_char();
+        test_grow_string();
         test_insert_char();
 }
 #endif

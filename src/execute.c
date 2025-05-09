@@ -39,8 +39,6 @@ static void cd(char *const user_input) {
                 return;
         }
 
-        char resolved_path[128];
-
         // TODO: ~, prefix and infix
         safe_chdir(user_input + 3);
 }
