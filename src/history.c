@@ -40,8 +40,6 @@ void push_history(const char *const input, const size_t len) {
                 extend_history();
 
         assert(len == strlen(input));
-        assert(history.inputs[history.len].value == NULL);
-        assert(history.inputs[history.len].len == 0);
 
         history.inputs[history.len].value = malloc((len + 1) * sizeof(char));
         history.inputs[history.len].len = len;

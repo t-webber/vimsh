@@ -2,6 +2,7 @@
 #include "history.h"
 #include "keyboard.h"
 #include "macros.h"
+#include "path.h"
 #include "shell.h"
 #include "str.h"
 #include <stdio.h>
@@ -12,7 +13,8 @@
 #define CTRL_A 1
 #define CTRL_D 4
 #define CTRL_E 5
-#define ENTER 10 // also ctrl+
+#define TAB 9    // aso ctrl+i
+#define ENTER 10 // also ctrl+j
 #define CTRL_K 11
 #define CTRL_L 12
 #define CTRL_U 21
@@ -190,6 +192,16 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len) {
         case CTRL_U: {
                 char *end = stpcpy(line, *ptr);
                 *len = (size_t)(end - line);
+                return;
+        }
+
+        case TAB: {
+                const Executable *exec = find_one_with_prefix(line, *len);
+                if (exec == NULL)
+                        return;
+
+                stpcpy(line, exec->name);
+                *len = strlen(line);
                 return;
         }
 
