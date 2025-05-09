@@ -42,7 +42,7 @@ void run_shell(void) {
                 handle_keypress(line, c, &ptr, &previous_len, ps1);
                 line[previous_len] = '\0';
 
-                get_ps1(ps1);
+                get_ps1(ps1); // TODO: should i call it every time?
                 ps1_len = strlen(ps1);
 
                 printf("%s%s\r\033[%luC", ps1, line,
@@ -54,7 +54,7 @@ void run_shell(void) {
 void close_shell(void) {
         fclose(debug_file);
         free_executables();
-        free_home();
+
         printf("\n");
         tcsetattr(STDIN_FILENO, TCSANOW, &initial_termial_mode);
         exit(0);

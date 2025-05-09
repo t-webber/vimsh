@@ -11,6 +11,3 @@ void execute_command(char *const user_input, const size_t len);
 
 /// Initialises the HOME variable to replace ~ later
 void initialise_home(void);
-
-/// Free the memory taken by @ref initialise_home.
-void free_home(void);

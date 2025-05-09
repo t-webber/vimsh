@@ -15,8 +15,6 @@ void initialise_home(void) {
         }
 }
 
-void free_home(void) { free(home_path); }
-
 static void safe_chdir(const char *const path) {
         int x = chdir(path);
         if (x == 0)
