@@ -26,8 +26,9 @@
 #define LEFT 'D'
 #define RIGHT 'C'
 
-static size_t history_pointer = -1UL;
-static char current_line[] = "";
+const size_t CURRENT_POSITION = -1UL;
+static size_t history_pointer = CURRENT_POSITION;
+static char current_line[MAX_LINE] = "";
 static size_t current_len = 0;
 
 static void handle_ctrl_arrow_press(char *const line, char **ptr) {
@@ -99,7 +100,7 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                 return;
 
         case UP: {
-                if (history_pointer == -1UL) {
+                if (history_pointer == CURRENT_POSITION) {
                         stpcpy(current_line, line);
                         current_len = *len;
                 }
@@ -118,7 +119,7 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
         }
 
         case DOWN: {
-                if (history_pointer == -1UL)
+                if (history_pointer == CURRENT_POSITION)
                         return;
 
                 if (history_pointer == 0) {
@@ -164,7 +165,7 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len) {
                 return;
         };
 
-        history_pointer = -1UL;
+        history_pointer = CURRENT_POSITION;
 
         switch (c) {
 
@@ -202,6 +203,7 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len) {
 
                 stpcpy(line, exec->name);
                 *len = strlen(line);
+                *ptr = line + *len;
                 return;
         }
 

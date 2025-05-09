@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#define MAX_LINE 512
+
 #ifdef TEST
 #include <stdlib.h>
 #define DIE exit(1);

@@ -17,7 +17,7 @@ FILE *debug_file;
 
 void run_shell(void) {
 
-        char line[1000];
+        char line[MAX_LINE];
         char *ptr = line;
         *ptr = '\0';
         char c;

@@ -7,7 +7,7 @@
 #include <string.h>
 
 static void realloc_executable_list(ExecutableList *list) {
-        const size_t new_cap = 1 + list->cap;
+        const size_t new_cap = 10 + list->cap * 2;
         Executable *new_values = malloc(new_cap * sizeof(Executable));
         for (size_t i = 0; i < list->len; ++i) {
                 Executable old = list->values[i];
