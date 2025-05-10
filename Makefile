@@ -1,4 +1,4 @@
-.PHONY: all debug clean
+.PHONY: all watch run test debug clean
 
 HDRS  = $(shell find src/ | grep "\.h" )
 SRCS  = $(HDRS:.h=.c)
@@ -17,5 +17,9 @@ run: debug
 watch:
 	watch -n 0.1 tail -n 10 b.txt
 
+test: 
+	gcc src/str.c -DTEST -o str_test.out
+	./str_test.out
+
 clean:
-	rm -f main.out *.txt
+	rm -f *.out *.txt
