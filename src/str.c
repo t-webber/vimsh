@@ -1,5 +1,6 @@
 #include "macros.h"
 #include "str.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,9 +37,29 @@ void push_string(String *str, char ch) {
         str->value[str->len] = '\0';
 }
 
+bool str_prefix_eq(const char *const s1, const char *const s2) {
+        for (const char *ptr1 = s1, *ptr2 = s2; *ptr1 != '\0' && *ptr2 != '\0';
+             ++ptr1, ++ptr2)
+                if (*ptr1 != *ptr2)
+                        return false;
+        return true;
+}
+
 #ifdef TEST
 #include <stdio.h>
 #include <string.h>
+
+/// Tests for the @ref str_prefix_eq function
+static void test_prefix(void) {
+        assert(!str_prefix_eq("pi8o", "CTM"));
+        assert(str_prefix_eq("cjy9", "cj"));
+        assert(!str_prefix_eq("0429", "kBbz"));
+        assert(str_prefix_eq("", "MxJd"));
+        assert(!str_prefix_eq("E7eI", "kknC"));
+        assert(str_prefix_eq("GtKH", "GtKH"));
+        assert(str_prefix_eq("GtKH ", "GtKH"));
+        assert(!str_prefix_eq("UAnM", "P1rM"));
+}
 
 /// Tests the logic on the @ref String struct.
 static void test_grow_string(void) {
@@ -96,6 +117,7 @@ static void test_insert_char(void) {
 }
 
 int main() {
+        test_prefix();
         test_delete_char();
         test_grow_string();
         test_insert_char();
