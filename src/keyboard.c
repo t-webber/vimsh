@@ -5,6 +5,7 @@
 #include "path.h"
 #include "shell.h"
 #include "str.h"
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +31,17 @@ const size_t CURRENT_POSITION = -1UL;
 static size_t history_pointer = CURRENT_POSITION;
 static char current_line[MAX_LINE] = "";
 static size_t current_len = 0;
+
+typedef enum { None, Char, CharAndSpace } ContainsSpace;
+static ContainsSpace contains_space = None;
+
+static void update_state(char c) {
+        if (contains_space == Char && c == ' ')
+                contains_space = CharAndSpace;
+
+        else if (contains_space == None && c != ' ')
+                contains_space = Char;
+}
 
 static void handle_ctrl_arrow_press(char *const line, char **ptr) {
         char next;
@@ -158,6 +170,48 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                 return;
         }
 }
+
+static void handle_tab(char *const line, char **ptr, size_t *len) {
+        char *completion = NULL;
+
+        log("Completion...\n");
+
+        if (contains_space != CharAndSpace) {
+                log("Searching executable...\n");
+                const Executable *exec = find_one_with_prefix(line, *len);
+                if (exec != NULL)
+                        completion = exec->name;
+        }
+
+        if (completion == NULL) {
+                log("Searching file...\n");
+                DIR *d = opendir(".");
+                if (d == NULL)
+                        return;
+
+                struct dirent *elt;
+                while ((elt = readdir(d)) != NULL) {
+                        log("Testing %s with len %zu...", elt->d_name, *len);
+                        if (strncmp(elt->d_name, line, *len) == 0) {
+                                completion = elt->d_name;
+                                closedir(d);
+                        }
+                }
+        }
+
+        if (completion == NULL) {
+                log("None found...\n");
+                return;
+        }
+
+        log("Found completion %s!\n", completion);
+
+        stpcpy(line, completion);
+        *len = strlen(line);
+        *ptr = line + *len;
+        return;
+}
+
 void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                      const char *const ps1) {
 
@@ -198,16 +252,9 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 return;
         }
 
-        case TAB: {
-                const Executable *exec = find_one_with_prefix(line, *len);
-                if (exec == NULL)
-                        return;
-
-                stpcpy(line, exec->name);
-                *len = strlen(line);
-                *ptr = line + *len;
+        case TAB:
+                handle_tab(line, ptr, len);
                 return;
-        }
 
         case ENTER:
                 printf("\r%s%s\n", ps1, line);
@@ -218,8 +265,8 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 *ptr = line;
                 **ptr = '\0';
                 assert_int(strlen(line), 0l);
-                log(">>> |%s| [%zu] (%zu) -> |%s|                         \n",
-                    line, strlen(line), *len, *ptr);
+                log(">>> |%s| [%zu] (%zu) -> |%s|\n", line, strlen(line), *len,
+                    *ptr);
                 return;
 
         case BACKSPACE:
@@ -228,11 +275,12 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 return;
 
         default:
+                update_state(c);
                 ++*len;
                 insert_char(*ptr, c);
                 ++*ptr;
-                log("|%s| [%zu] (%zu) -> |%s|                         \n", line,
-                    strlen(line), *len, *ptr);
+                log("|%s| [%zu] (%zu) -> |%s|\n", line, strlen(line), *len,
+                    *ptr);
                 return;
         }
 }

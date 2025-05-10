@@ -37,32 +37,18 @@ void run_shell(void) {
         while (1) {
                 read_pressed_char(&c);
 
-                log("Pressed %c...\n", c);
-
                 clear_line(previous_len + ps1len);
-
-                log("Screen cleared...\n");
-                // sleep(1);
 
                 handle_keypress(line, c, &ptr, &previous_len, ps1);
                 line[previous_len] = '\0';
                 assert_int(strlen(line), previous_len);
 
-                log("Handled...\n");
-                // sleep(1);
-
                 get_ps1(ps1); // TODO: should i call it every time?
                 ps1len = ps1_len(ps1) + 1;
-
-                log("PS1 recomputed...\n");
-                // sleep(1);
 
                 printf("%s%s\r\033[%luC", ps1, line,
                        (size_t)(ptr - line) + ps1len);
                 fflush(stdout);
-
-                log("UI refresh....\n");
-                // sleep(1);
         }
 }
 
