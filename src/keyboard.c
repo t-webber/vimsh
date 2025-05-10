@@ -183,19 +183,31 @@ static void handle_tab(char *const line, char **ptr, size_t *len) {
                         completion = exec->name;
         }
 
-        if (completion == NULL) {
-                log("Searching file...\n");
-                DIR *d = opendir(".");
-                if (d == NULL)
-                        return;
+        if (completion != NULL) {
+                stpcpy(line, completion);
+                *len = strlen(line);
+                *ptr = line + *len;
+                log("Found exec completion %s!\n", completion);
+                return;
+        }
 
-                struct dirent *elt;
-                while ((elt = readdir(d)) != NULL) {
-                        log("Testing %s with len %zu...", elt->d_name, *len);
-                        if (strncmp(elt->d_name, line, *len) == 0) {
-                                completion = elt->d_name;
-                                closedir(d);
-                        }
+        log("Searching file...\n");
+        DIR *d = opendir(".");
+        if (d == NULL)
+                return;
+
+        char *line_second = line + *len;
+        while (*line_second != ' ' && line_second != line)
+                --line_second;
+        if (line_second != line)
+                ++line_second;
+
+        struct dirent *elt;
+        while ((elt = readdir(d)) != NULL) {
+                log("Testing [%s] with [%s]...\n", elt->d_name, line_second);
+                if (str_prefix_eq(elt->d_name, line_second)) {
+                        completion = elt->d_name;
+                        closedir(d);
                 }
         }
 
@@ -204,11 +216,12 @@ static void handle_tab(char *const line, char **ptr, size_t *len) {
                 return;
         }
 
-        log("Found completion %s!\n", completion);
-
-        stpcpy(line, completion);
+        stpcpy(line_second, completion);
         *len = strlen(line);
         *ptr = line + *len;
+
+        log("Found file completion %s!\n", completion);
+
         return;
 }
 
