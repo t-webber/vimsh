@@ -194,6 +194,7 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
         case CTRL_U: {
                 char *end = stpcpy(line, *ptr);
                 *len = (size_t)(end - line);
+                *ptr = line;
                 return;
         }
 
@@ -210,11 +211,15 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
 
         case ENTER:
                 printf("\r%s%s\n", ps1, line);
-                assert(strlen(line) == *len);
+                log("SUBMITTING |%s|\n", line);
+                assert_int(strlen(line), *len);
                 execute_command(line, *len);
                 *len = 0;
                 *ptr = line;
                 **ptr = '\0';
+                assert_int(strlen(line), 0l);
+                log(">>> |%s| [%zu] (%zu) -> |%s|                         \n",
+                    line, strlen(line), *len, *ptr);
                 return;
 
         case BACKSPACE:
@@ -226,6 +231,8 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 ++*len;
                 insert_char(*ptr, c);
                 ++*ptr;
+                log("|%s| [%zu] (%zu) -> |%s|                         \n", line,
+                    strlen(line), *len, *ptr);
                 return;
         }
 }

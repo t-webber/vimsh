@@ -26,8 +26,15 @@
 
 #define assert(expr)                                                           \
         if (!(expr)) {                                                         \
-                panic("Assert %s failed at %s:%d (function %s)", #expr,        \
+                panic("Assertion %s failed at %s:%d (function %s).\n", #expr,  \
                       __FILE__, __LINE__, __func__);                           \
+        }
+
+#define assert_int(a, b)                                                       \
+        if (a != b) {                                                          \
+                panic("Assertion failed at %s:%d (function %s):\n%s (= %li) "  \
+                      "!= %s (= %li).",                                        \
+                      __FILE__, __LINE__, __func__, #a, a, #b, b);             \
         }
 
 #define eprint(...) fprintf(stderr, __VA_ARGS__)
