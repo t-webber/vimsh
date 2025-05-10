@@ -41,6 +41,22 @@ static void cd(char *const user_input) {
         safe_chdir(user_input + 3);
 }
 
+static bool execute_alias(const char *const user_input, const char *const alias,
+                          const char *const expanded) {
+
+        if (strncmp(alias, user_input, 2) == 0) {
+                char *command = malloc(strlen(user_input) + strlen(expanded));
+                char *end = stpcpy(command, expanded);
+                assert(*end == '\0');
+                stpcpy(end, user_input + 2);
+                system(command);
+                free(command);
+                return true;
+        }
+
+        return false;
+}
+
 void execute_command(char *const user_input, const size_t len) {
 
         push_history(user_input, len);
@@ -54,6 +70,15 @@ void execute_command(char *const user_input, const size_t len) {
         else if (strcmp("print_history", user_input) == 0)
                 print_history();
 
-        else
+        else {
+                if (len == 1) {
+                        *(user_input + 1) = ' ';
+                        *(user_input + 2) = '\0';
+                }
+
+                if (execute_alias(user_input, "l ", "eza -a "))
+                        return;
+
                 system(user_input);
+        }
 }
