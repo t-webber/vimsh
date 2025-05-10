@@ -30,7 +30,7 @@ run: debug
 	./$(OUT)
 
 watch:
-	watch -n 0.1 tail -n 10 b.txt
+	watch -n 0.1 tail -n 30 b.txt
 
 valgrind: debug
 	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --show-leak-kinds=all --leak-check=full ./$(OUT)
@@ -46,4 +46,4 @@ valgrindtest: test
 	
 	
 clean:
-	rm -f *.out *.txt src/*.out vgcore.*
+	rm -f *.out *.txt src/*.out vgcore.* callgrind.out.*

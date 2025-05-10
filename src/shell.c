@@ -16,47 +16,64 @@
 
 struct termios initial_termial_mode;
 FILE *debug_file;
+char *ps1;
 
 void run_shell(void) {
 
         char line[MAX_LINE];
         char *ptr = line;
         *ptr = '\0';
+
+        get_ps1(ps1);
+
+        size_t ps1len = ps1_len(ps1) + 1;
+
+        printf("%s%s", ps1, line);
+        fflush(stdout);
+
         char c;
         size_t previous_len = 0;
-
-        char ps1[32];
-        get_ps1(ps1);
-        size_t ps1_len = strlen(ps1);
-
-        printf("%s", ps1);
-        fflush(stdout);
 
         while (1) {
                 read_pressed_char(&c);
 
-                log(">>> %c (%d)\n", c, c);
+                log("Pressed %c...\n", c);
 
-                clear_line(previous_len + ps1_len);
+                clear_line(previous_len + ps1len);
+
+                log("Screen cleared...\n");
+                // sleep(1);
 
                 handle_keypress(line, c, &ptr, &previous_len, ps1);
                 line[previous_len] = '\0';
+                assert_int(strlen(line), previous_len);
+
+                log("Handled...\n");
+                // sleep(1);
 
                 get_ps1(ps1); // TODO: should i call it every time?
-                ps1_len = strlen(ps1);
+                ps1len = ps1_len(ps1) + 1;
+
+                log("PS1 recomputed...\n");
+                // sleep(1);
 
                 printf("%s%s\r\033[%luC", ps1, line,
-                       (size_t)(ptr - line) + ps1_len);
+                       (size_t)(ptr - line) + ps1len);
                 fflush(stdout);
+
+                log("UI refresh....\n");
+                // sleep(1);
         }
 }
 
 void close_shell(void) {
+        tcsetattr(STDIN_FILENO, TCSANOW, &initial_termial_mode);
+        printf("\n");
+
         fclose(debug_file);
         free_executables();
+        free(ps1);
 
-        printf("\n");
-        tcsetattr(STDIN_FILENO, TCSANOW, &initial_termial_mode);
         exit(0);
 }
 
@@ -70,6 +87,7 @@ void open_shell(void) {
         debug_file = fopen("b.txt", "w");
         initialise_executables();
         initialise_home();
+        ps1 = malloc(64);
 
         tcgetattr(STDIN_FILENO, &initial_termial_mode);
 
