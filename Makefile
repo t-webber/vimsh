@@ -2,7 +2,6 @@
 
 HDRS = $(shell find src/ | grep "\.h" | grep -v macros )
 SRCS = $(HDRS:.h=.c)
-SRCS += src/main.c
 
 OUT = main.out
 
@@ -20,7 +19,7 @@ CFLAGS = -p -g \
          -Wmissing-prototypes -Wnested-externs -Wlogical-op -Wduplicated-cond -Wduplicated-branches \
          -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wvla -Wstack-protector
 
-all: run
+all: valgrind 
 
 debug:
 	clear
@@ -33,7 +32,7 @@ watch:
 	watch -n 0.1 tail -n 30 b.txt
 
 valgrind: debug
-	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --show-leak-kinds=all --leak-check=full ./$(OUT)
+	DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --show-error-list=yes --show-leak-kinds=all --leak-check=full ./$(OUT)
 
 gdb: debug
 	gdb ./$(OUT)
@@ -42,7 +41,7 @@ test: $(TESTS)
 	$(foreach f, $(TESTS), gcc $(CFLAGS) $(f) -o $(f:.c=.out) -DTEST ; echo Testing $(f)... ; ./$(f:.c=.out);)
 
 valgrindtest: test
-	$(foreach f, $(TESTS), echo -e "===============================\n===============================\n>>>>> Running valgrind for $(f)..." ; DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --leak-check=full --show-leak-kinds=all ./$(f:.c=.out); )
+	$(foreach f, $(TESTS), echo -e "===============================\n===============================\n>>>>> Running valgrind for $(f)..." ; DEBUGINFOD_URLS="https://debuginfod.archlinux.org/" valgrind --show-error-list=yes --leak-check=full --show-leak-kinds=all ./$(f:.c=.out); )
 	
 	
 clean:

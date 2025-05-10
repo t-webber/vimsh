@@ -3,7 +3,6 @@
 #include "keyboard.h"
 #include "macros.h"
 #include "path.h"
-#include "shell.h"
 #include "str.h"
 #include <dirent.h>
 #include <stdio.h>
@@ -181,14 +180,14 @@ static void handle_tab(char *const line, char **ptr, size_t *len) {
                 const Executable *exec = find_one_with_prefix(line, *len);
                 if (exec != NULL)
                         completion = exec->name;
-        }
 
-        if (completion != NULL) {
-                stpcpy(line, completion);
-                *len = strlen(line);
-                *ptr = line + *len;
-                log("Found exec completion %s!\n", completion);
-                return;
+                if (completion != NULL) {
+                        stpcpy(line, completion);
+                        *len = strlen(line);
+                        *ptr = line + *len;
+                        log("Found exec completion %s!\n", completion);
+                        return;
+                }
         }
 
         log("Searching file...\n");
@@ -207,21 +206,24 @@ static void handle_tab(char *const line, char **ptr, size_t *len) {
                 log("Testing [%s] with [%s]...\n", elt->d_name, line_second);
                 if (str_prefix_eq(elt->d_name, line_second)) {
                         completion = elt->d_name;
-                        closedir(d);
+                        break;
                 }
         }
 
         if (completion == NULL) {
                 log("None found...\n");
+                closedir(d);
                 return;
         }
 
+        log("Completing with %s\n", completion);
         stpcpy(line_second, completion);
         *len = strlen(line);
         *ptr = line + *len;
 
         log("Found file completion %s!\n", completion);
 
+        closedir(d);
         return;
 }
 

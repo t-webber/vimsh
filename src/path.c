@@ -121,10 +121,21 @@ static void count_executables(void) {
 
         char line[16];
         fgets(line, 16, find);
-        size_t expected = (size_t)atoi(line) + 1;
-        assert(expected == executable_list.len);
-
+        size_t expected = (size_t)atoi(line);
         pclose(find);
+
+        if (expected == executable_list.len)
+                return;
+
+        FILE *computed = fopen("exec.txt", "w");
+        if (command == NULL)
+                panic("Failed to write error to exec.txt");
+
+        for (size_t i = 0; i < executable_list.len; ++i) {
+                fprintf(computed, "%s\n", executable_list.values[i].name);
+        }
+
+        assert_int(expected, executable_list.len);
 }
 
 static void check_exact_completion(const char *const prefix,

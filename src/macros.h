@@ -9,7 +9,7 @@
 #define DIE exit(1);
 #define log(...) printf(__VA_ARGS__);
 #else
-#include "shell.h"
+#include "main.h"
 #define DIE close_shell();
 #define log(...)                                                               \
         {                                                                      \
