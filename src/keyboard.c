@@ -1,11 +1,10 @@
-#include "display.h"
 #include "execute.h"
 #include "keyboard.h"
 #include "str.h"
 #include <stdio.h>
 #include <unistd.h>
 
-void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
+bool handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                      size_t *len)
 {
 
@@ -20,7 +19,7 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                 fprintf(debug_file, "Then %c!\n", next);
 
                 if (next != '[')
-                        return;
+                        return false;
 
                 read_pressed_char(&next);
 
@@ -35,17 +34,17 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
                         if (**ptr != '\0')
                                 ++*ptr;
 
-                return;
+                return false;
         }
 
         if (c == 10)
         {
                 printf("\r$ %s\n", line);
-                execute_command(line);
+                bool should_exit = execute_command(line);
                 *len = 0;
                 *ptr = line;
                 **ptr = '\0';
-                return;
+                return should_exit;
         }
 
         /// <Del> key.
@@ -53,12 +52,14 @@ void handle_keypress(FILE *debug_file, char *const line, char c, char **ptr,
         {
                 if (*ptr != line)
                         --*ptr, --*len;
-                return;
+                return false;
         }
 
         ++*len;
         insert_char(*ptr, c);
         ++*ptr;
+
+        return false;
 }
 
 void read_pressed_char(char *c) { read(STDIN_FILENO, c, 1); }
