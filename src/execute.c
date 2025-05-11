@@ -46,11 +46,12 @@ static void cd(char *const user_input) {
                 const size_t alias_len = sizeof(alias);                        \
                 const size_t expanded_len = sizeof(expanded);                  \
                 if (strncmp(alias, user_input, alias_len - 1) == 0) {          \
-                        char *command =                                        \
-                            malloc(len + 1 - alias_len + expanded_len + 2);    \
+                        const size_t cap =                                     \
+                            corrected_len - alias_len + expanded_len + 1;      \
+                        char *command = malloc(cap);                           \
                         char *end = stpcpy(command, expanded);                 \
-                        assert(*end == '\0');                                  \
-                        stpcpy(end, user_input + 2);                           \
+                        if (len > alias_len)                                   \
+                                stpcpy(end, user_input + alias_len);           \
                         system(command);                                       \
                         free(command);                                         \
                         return;                                                \
@@ -74,15 +75,20 @@ void execute_command(char *const user_input, const size_t len) {
                 print_history();
 
         else {
+                size_t corrected_len = len;
                 if (*(user_input + len - 1) != ' ') {
                         *(user_input + len) = ' ';
-
                         *(user_input + len + 1) = '\0';
+                        ++corrected_len;
                 }
+
+                assert(*(user_input + corrected_len) == '\0');
 
                 execute_alias("l ", "eza -a ");
                 execute_alias("bp ",
                               "cat /sys/class/power_supply/BAT1/capacity");
+                execute_alias("gd ", "git diff ");
+                execute_alias("vsh ", "$DEV/vsh/main.out");
 
                 system(user_input);
         }
