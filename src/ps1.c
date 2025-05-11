@@ -1,4 +1,5 @@
 #include "macros.h"
+#include "main.h"
 #include "ps1.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +15,14 @@
 #define SHORTP(path, pwd, var, alias)                                          \
         SHORT(path, alias, strcmp(getenv(var), pwd) == 0);
 
+#define RED "\x1b[31m"
+#define GREEN "\x1b[32m"
+#define YELLOW "\x1b[33m"
+#define BLUE "\x1b[34m"
+#define PURPLE "\x1b[35m"
+#define CYAN "\x1b[36m"
+#define RESET_COLOUR "\x1b[0m"
+
 static char *pwd(char *path) {
         char pwd[128];
         getcwd(pwd, 128);
@@ -22,7 +31,7 @@ static char *pwd(char *path) {
         char *end = pwd + len;
         assert(*end == '\0');
 
-        path = stpcpy(path, "\x1b[36m");
+        path = stpcpy(path, CYAN);
         assert(*end == '\0');
 
         SHORT(path, "/", strcmp(pwd, "/") == 0);
@@ -60,7 +69,7 @@ static char *git_branch(char *end) {
         fclose(head_fd);
 
         *(head + strlen(head) - 1) = '\0';
-        end = stpcpy(end, "\x1b[32m");
+        end = stpcpy(end, GREEN);
 
         if (strcmp(head + 16, "main") == 0)
                 return stpcpy(end, ". ");
@@ -86,21 +95,35 @@ size_t ps1_len(const char *const ps1) {
 
 void get_ps1(char *const ps1) {
         char *end = ps1;
-        if (get_battery_level() < 30)
-                end = stpcpy(end, "\x1b[31m! ");
+        if (get_battery_level() < 30) {
+                end = stpcpy(end, RED);
+                end = stpcpy(end, "! ");
+        }
 
         time_t t = time(NULL);
         struct tm tm = *localtime(&t);
-        end += sprintf(end, "\x1b[33m%d%d ", tm.tm_hour % 12, tm.tm_min);
-
-        assert(*end == '\0');
+        end += sprintf(end, "%s%d%d ", YELLOW, tm.tm_hour % 12, tm.tm_min);
 
         end = pwd(end);
-        assert(*end == '\0');
         *end++ = ' ';
+        end = stpcpy(end, PURPLE);
+
+        switch (vim_mode) {
+
+        case NormalMode:
+                end = stpcpy(end, "N ");
+                break;
+
+        case InsertMode:
+                end = stpcpy(end, "I ");
+                break;
+
+        default:
+                panic("Invalid mode: %d\n", vim_mode);
+        }
 
         end = git_branch(end);
-        end = stpcpy(end, "\x1b[0m");
+        end = stpcpy(end, RESET_COLOUR);
 
         assert(*end == '\0');
 }

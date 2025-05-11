@@ -10,3 +10,9 @@ void close_shell(void);
 /// Logs can't be printed to the standard outputs because they are already
 /// heavily used by the program.
 extern FILE *debug_file;
+
+/// Enum that follows the vim mode currently in use.
+typedef enum { NormalMode, InsertMode } VimMode;
+
+/// Current @ref VimMode
+extern VimMode vim_mode;

@@ -2,6 +2,7 @@
 #include "history.h"
 #include "keyboard.h"
 #include "macros.h"
+#include "main.h"
 #include "path.h"
 #include "ps1.h"
 #include <pthread.h>
@@ -29,6 +30,7 @@ static void clear_line(const size_t previous_len, const char *const line,
 struct termios initial_termial_mode;
 FILE *debug_file;
 char *ps1;
+VimMode vim_mode = InsertMode;
 
 /// Main runner that listens for keypress, displays the prompts and handles I/O
 /// for commands and logging.

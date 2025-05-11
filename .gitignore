@@ -3,3 +3,4 @@
 .jj
 callgrind.out.*
 todo
+vgcore.*
