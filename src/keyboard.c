@@ -2,6 +2,7 @@
 #include "history.h"
 #include "keyboard.h"
 #include "macros.h"
+#include "main.h"
 #include "path.h"
 #include "str.h"
 #include <dirent.h>
@@ -297,6 +298,15 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 }
                 return;
 
+        case -62: {
+                char next;
+                read_pressed_char(&next);
+                if (next != -78)
+                        return;
+                vim_mode = NormalMode;
+                return;
+        }
+
         default:
                 update_state(c);
                 ++*len;
@@ -308,5 +318,5 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
 
 void read_pressed_char(char *c) {
         read(STDIN_FILENO, c, 1);
-        log("[[%c](%d)]\n", *c, *c);
+        log("[[%hhd](%hhd)]\n", *c, *c);
 }
