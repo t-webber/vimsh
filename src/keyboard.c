@@ -45,22 +45,18 @@ static void update_state(char c) {
 static void handle_ctrl_arrow_press(char *const line, char **ptr) {
         char next;
         read_pressed_char(&next);
-        log("1. Then %c!\n", next);
         if (next != ';')
                 return;
 
         read_pressed_char(&next);
-        log("2. Then %c!\n", next);
         if (next != '5')
                 return;
 
         read_pressed_char(&next);
-        log("3. Then %c!\n", next);
 
         switch (next) {
 
         case LEFT: {
-                log("Ctrl+Left\n");
                 if (*ptr == line)
                         return;
                 --*ptr;
@@ -70,7 +66,6 @@ static void handle_ctrl_arrow_press(char *const line, char **ptr) {
         }
 
         case RIGHT: {
-                log("Ctrl+Right\n");
                 if (**ptr == '\0')
                         return;
                 ++*ptr;
@@ -85,24 +80,14 @@ static void handle_ctrl_arrow_press(char *const line, char **ptr) {
 }
 
 static void handle_escape_press(char *const line, char **ptr, size_t *len) {
-        log("Escaped!\n");
-
         char next;
         read_pressed_char(&next);
 
-        log("a. Then %c!\n", next);
-
         if (next != '[') {
-                if (next != 'd')
-                        return;
-
-                log("d!!\n");
                 return;
         }
 
         read_pressed_char(&next);
-
-        log("b. Then %c!\n", next);
 
         switch (next) {
 
@@ -273,15 +258,12 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
 
         case ENTER:
                 printf("\r%s%s\n", ps1, line);
-                log("SUBMITTING |%s|\n", line);
                 assert_int(strlen(line), *len);
                 execute_command(line, *len);
                 *len = 0;
                 *ptr = line;
                 **ptr = '\0';
                 assert_int(strlen(line), 0l);
-                log(">>> |%s| [%zu] (%zu) -> |%s|\n", line, strlen(line), *len,
-                    *ptr);
                 return;
 
         case BACKSPACE:
@@ -294,8 +276,6 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 ++*len;
                 insert_char(*ptr, c);
                 ++*ptr;
-                log("|%s| [%zu] (%zu) -> |%s|\n", line, strlen(line), *len,
-                    *ptr);
                 return;
         }
 }

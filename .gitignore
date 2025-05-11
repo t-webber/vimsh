@@ -2,3 +2,4 @@
 *.txt
 .jj
 callgrind.out.*
+todo

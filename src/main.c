@@ -13,15 +13,16 @@
 #include <termios.h>
 #include <unistd.h>
 
-/// Clears the current line.
+/// Prints the current line and erases the old one.
 ///
 /// Thanks to this function, old characters aren't left on the screen (e.g.
 /// after pressing <Suppr> or <Backspace>).
-static void clear_line(const size_t len) {
+static void clear_line(const size_t previous_len, const char *const line,
+                       const char *const ps1, const size_t ptr_offset) {
         printf("\r");
-        for (size_t i = 0; i < len; ++i)
+        for (size_t i = 0; i < previous_len; ++i)
                 printf(" ");
-        printf("\r");
+        printf("\r%s%s\033[1C\033[%luD", ps1, line, ptr_offset);
         fflush(stdout);
 }
 
@@ -45,23 +46,27 @@ static void run_shell(void) {
         fflush(stdout);
 
         char c;
-        size_t previous_len = 0;
+        size_t previous_len = 0, current_len = 0;
 
         while (1) {
                 read_pressed_char(&c);
 
-                clear_line(previous_len + ps1len);
-
-                handle_keypress(line, c, &ptr, &previous_len, ps1);
-                line[previous_len] = '\0';
-                assert_int(strlen(line), previous_len);
+                handle_keypress(line, c, &ptr, &current_len, ps1);
+                line[current_len] = '\0';
 
                 get_ps1(ps1);
                 ps1len = ps1_len(ps1) + 1;
 
-                printf("%s%s\r\033[%luC", ps1, line,
-                       (size_t)(ptr - line) + ps1len);
+                log("[[%s] (%zu) -> (%zu)\n", line, previous_len, current_len);
+
+                // log("line: %p | ptr: %p | diff: %lu | len: %lu\n", line, ptr,
+                //     (size_t)(ptr - line), previous_len);
+
+                clear_line(previous_len + ps1len, line, ps1,
+                           current_len - (size_t)(ptr - line));
                 fflush(stdout);
+
+                previous_len = current_len;
         }
 }
 
