@@ -1,4 +1,5 @@
 #include "execute.h"
+#include "history.h"
 #include "keyboard.h"
 #include "macros.h"
 #include "path.h"
@@ -70,6 +71,7 @@ void close_shell(void) {
 
         fclose(debug_file);
         free_executables();
+        free_history();
         free(ps1);
 
         exit(0);

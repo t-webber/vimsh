@@ -41,23 +41,26 @@ static void cd(char *const user_input) {
         safe_chdir(user_input + 3);
 }
 
-static bool execute_alias(const char *const user_input, const char *const alias,
-                          const char *const expanded) {
-
-        if (strncmp(alias, user_input, 2) == 0) {
-                char *command = malloc(strlen(user_input) + strlen(expanded));
-                char *end = stpcpy(command, expanded);
-                assert(*end == '\0');
-                stpcpy(end, user_input + 2);
-                system(command);
-                free(command);
-                return true;
+#define execute_alias(alias, expanded)                                         \
+        {                                                                      \
+                const size_t alias_len = sizeof(alias);                        \
+                const size_t expanded_len = sizeof(expanded);                  \
+                if (strncmp(alias, user_input, alias_len - 1) == 0) {          \
+                        char *command =                                        \
+                            malloc(len + 1 - alias_len + expanded_len + 2);    \
+                        char *end = stpcpy(command, expanded);                 \
+                        assert(*end == '\0');                                  \
+                        stpcpy(end, user_input + 2);                           \
+                        system(command);                                       \
+                        free(command);                                         \
+                        return;                                                \
+                }                                                              \
         }
 
-        return false;
-}
-
 void execute_command(char *const user_input, const size_t len) {
+
+        if (len == 0)
+                return;
 
         push_history(user_input, len);
 
@@ -71,13 +74,15 @@ void execute_command(char *const user_input, const size_t len) {
                 print_history();
 
         else {
-                if (len == 1) {
-                        *(user_input + 1) = ' ';
-                        *(user_input + 2) = '\0';
+                if (*(user_input + len - 1) != ' ') {
+                        *(user_input + len) = ' ';
+
+                        *(user_input + len + 1) = '\0';
                 }
 
-                if (execute_alias(user_input, "l ", "eza -a "))
-                        return;
+                execute_alias("l ", "eza -a ");
+                execute_alias("bp ",
+                              "cat /sys/class/power_supply/BAT1/capacity");
 
                 system(user_input);
         }
