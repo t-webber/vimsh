@@ -37,6 +37,23 @@ void push_string(String *str, char ch) {
         str->value[str->len] = '\0';
 }
 
+void extend_string(String *dest, const char *const src, const size_t src_len) {
+        if (dest->cap <= dest->len + 1 + src_len) {
+                size_t new_cap =
+                    max(10 + dest->cap * 2, dest->len + src_len + 2);
+                char *new_value = malloc(new_cap * sizeof(char));
+                if (dest->value != NULL) {
+                        stpcpy(new_value, dest->value);
+                        free(dest->value);
+                }
+                dest->value = new_value;
+                dest->cap = new_cap;
+        }
+
+        stpcpy(dest->value + dest->len, src);
+        dest->len += src_len;
+}
+
 bool str_prefix_eq(const char *const s1, const char *const s2) {
         for (const char *ptr1 = s1, *ptr2 = s2; *ptr1 != '\0' && *ptr2 != '\0';
              ++ptr1, ++ptr2)
@@ -48,6 +65,25 @@ bool str_prefix_eq(const char *const s1, const char *const s2) {
 #ifdef TEST
 #include <stdio.h>
 #include <string.h>
+
+// Tests for the @ref extend_string function
+static void test_extend(void) {
+        String s = {.cap = 0, .len = 0, .value = NULL};
+
+        extend_string(&s, "#", 1);
+        assert(s.len == 1);
+        assert(s.cap == 10);
+        assert(strcmp("#", s.value) == 0);
+
+        extend_string(&s, "Hello,", 6);
+        assert(s.len == 7);
+        assert(s.cap == 10);
+        assert(strcmp("#Hello,", s.value) == 0);
+
+        extend_string(&s, " world!", 7);
+        assert(s.len == 14);
+        assert(strcmp("#Hello, world!", s.value) == 0);
+}
 
 /// Tests for the @ref str_prefix_eq function
 static void test_prefix(void) {
@@ -117,6 +153,7 @@ static void test_insert_char(void) {
 }
 
 int main() {
+        test_extend();
         test_prefix();
         test_delete_char();
         test_grow_string();

@@ -38,3 +38,5 @@
         }
 
 #define eprint(...) fprintf(stderr, __VA_ARGS__)
+
+#define max(a, b) (a < b ? b : a)

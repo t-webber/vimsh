@@ -26,6 +26,9 @@ typedef struct {
 /// This function will grow the string with a realloc if necessary.
 void push_string(String *str, char ch);
 
+/// Extends a string with another string
+void extend_string(String *dest, const char *const src, const size_t src_len);
+
 /// Compares two strings by prefix.
 ///
 /// This will check that the first character that differs from both strings is
