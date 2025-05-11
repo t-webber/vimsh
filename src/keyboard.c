@@ -79,6 +79,60 @@ static void handle_ctrl_arrow_press(char *const line, char **ptr) {
         }
 }
 
+static void history_load_previous(char *const line, char **ptr, size_t *len) {
+        if (history_pointer == CURRENT_POSITION) {
+                stpcpy(current_line, line);
+                current_len = *len;
+        }
+
+        const char *const history = get_history(history_pointer + 1);
+
+        if (history == NULL)
+                return;
+
+        stpcpy(line, history);
+        *len = strlen(line);
+        ++history_pointer;
+        *ptr = line + *len;
+}
+
+static void history_load_next(char *const line, char **ptr, size_t *len) {
+        if (history_pointer == CURRENT_POSITION)
+                return;
+
+        if (history_pointer == 0) {
+                --history_pointer;
+                stpcpy(line, current_line);
+                *len = current_len;
+                *ptr = line + *len;
+                return;
+        }
+
+        const char *const history_entry = get_history(--history_pointer);
+        assert(history_entry != NULL);
+        char *end = stpcpy(line, history_entry);
+        assert(*end == '\0');
+
+        *len = strlen(line);
+        *ptr = line + *len;
+}
+
+static void handle_suppr(char *const line, char **ptr, size_t *len) {
+        char next;
+        read_pressed_char(&next);
+
+        if (next != '~')
+                return;
+
+        log("Suppr!\n");
+
+        if (*ptr == line + *len)
+                return;
+
+        delete_char(*ptr);
+        --*len;
+}
+
 static void handle_escape_press(char *const line, char **ptr, size_t *len) {
         char next;
         read_pressed_char(&next);
@@ -95,48 +149,17 @@ static void handle_escape_press(char *const line, char **ptr, size_t *len) {
                 handle_ctrl_arrow_press(line, ptr);
                 return;
 
-        case UP: {
-                if (history_pointer == CURRENT_POSITION) {
-                        stpcpy(current_line, line);
-                        current_len = *len;
-                }
-
-                const char *const history = get_history(history_pointer + 1);
-
-                if (history == NULL)
-                        return;
-
-                stpcpy(line, history);
-                *len = strlen(line);
-                ++history_pointer;
-                *ptr = line + *len;
-
+        case '3':
+                handle_suppr(line, ptr, len);
                 return;
-        }
 
-        case DOWN: {
-                if (history_pointer == CURRENT_POSITION)
-                        return;
-
-                if (history_pointer == 0) {
-                        --history_pointer;
-                        stpcpy(line, current_line);
-                        *len = current_len;
-                        *ptr = line + *len;
-                        return;
-                }
-
-                const char *const history_entry =
-                    get_history(--history_pointer);
-                assert(history_entry != NULL);
-                char *end = stpcpy(line, history_entry);
-                assert(*end == '\0');
-
-                *len = strlen(line);
-                *ptr = line + *len;
-
+        case UP:
+                history_load_previous(line, ptr, len);
                 return;
-        }
+
+        case DOWN:
+                history_load_next(line, ptr, len);
+                return;
 
         case LEFT: {
                 if (*ptr != line)
@@ -267,8 +290,11 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 return;
 
         case BACKSPACE:
-                if (*ptr != line)
-                        --*ptr, --*len;
+                if (*ptr != line) {
+                        --*ptr;
+                        delete_char(*ptr);
+                        --*len;
+                }
                 return;
 
         default:
@@ -280,4 +306,7 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
         }
 }
 
-void read_pressed_char(char *c) { read(STDIN_FILENO, c, 1); }
+void read_pressed_char(char *c) {
+        read(STDIN_FILENO, c, 1);
+        log("[[%c](%d)]\n", *c, *c);
+}

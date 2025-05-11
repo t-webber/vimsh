@@ -33,7 +33,7 @@ run: debug
 	./$(OUT)
 
 watch:
-	watch -n 0.1 tail -n 30 b.txt
+	watch -n 0.1 tail -n 20 b.txt
 
 valgrind: debug
 	$(VALGRIND) $(VALGRIND_FLAGS) ./$(OUT)

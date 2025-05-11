@@ -57,13 +57,16 @@ static void run_shell(void) {
                 get_ps1(ps1);
                 ps1len = ps1_len(ps1) + 1;
 
-                log("[[%s] (%zu) -> (%zu)\n", line, previous_len, current_len);
+                log("> %c\n", *ptr);
+
+                // log("[[%s] (%zu) -> (%zu)\n", line, previous_len,
+                // current_len);
 
                 // log("line: %p | ptr: %p | diff: %lu | len: %lu\n", line, ptr,
                 //     (size_t)(ptr - line), previous_len);
 
                 clear_line(previous_len + ps1len, line, ps1,
-                           current_len - (size_t)(ptr - line));
+                           current_len - (size_t)(ptr - line) + 1);
                 fflush(stdout);
 
                 previous_len = current_len;
