@@ -61,12 +61,6 @@ static void run_shell(void) {
 
                 log("> %c\n", *ptr);
 
-                // log("[[%s] (%zu) -> (%zu)\n", line, previous_len,
-                // current_len);
-
-                // log("line: %p | ptr: %p | diff: %lu | len: %lu\n", line, ptr,
-                //     (size_t)(ptr - line), previous_len);
-
                 clear_line(previous_len + ps1len, line, ps1,
                            current_len - (size_t)(ptr - line) + 1);
                 fflush(stdout);
