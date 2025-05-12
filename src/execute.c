@@ -48,8 +48,19 @@ typedef struct {
         const size_t len;
 } Alias;
 
-const Alias ALIASES[] = {{"l", "eza -a ", sizeof("eza -a ") - 1}};
-const size_t ALIASES_LEN = 1;
+#define alias(alias, expanded) {alias, expanded, sizeof(expanded) - 1}
+
+const Alias ALIASES[] = {
+    alias("l", "eza -a "),
+    alias("bp", "cat /sys/class/power_supply/BAT1/capacity "),
+    alias("gd", "git diff "),
+    alias("vsh", "$DEV/vsh/main.out "),
+    alias("gls", "git ls-files "),
+    alias("xcnt", "xargs wc -l "),
+    alias("cnt", "wc -l "),
+};
+
+const size_t ALIASES_LEN = 7;
 
 static bool try_extend_with_alias(const char *const start, String *expanded) {
         for (size_t i = 0; i < ALIASES_LEN; ++i)
@@ -74,10 +85,16 @@ static String expand_aliases(char *const user_input) {
                 bool found = try_extend_with_alias(start, &expanded);
                 if (!found) {
                         *end++ = ' ';
-                        char old = *end;
+
+                        char old = '\0';
+                        if (!must_break)
+                                old = *end;
+
                         *end = '\0';
                         extend_string(&expanded, start, (size_t)(end - start));
-                        *end-- = old;
+
+                        if (!must_break)
+                                *end-- = old;
                 }
 
                 if (must_break)
@@ -125,19 +142,8 @@ void execute_command(char *const user_input, const size_t len) {
                 print_history();
 
         else {
-                log("Expanding command [%s]...\n", trimmed_input);
                 String command = expand_aliases(trimmed_input);
-                log("Executing command [%s]...\n", command.value);
                 system(command.value);
                 free(command.value);
-
-                // execute_alias("l ", "eza -a ");
-                // execute_alias("bp ",
-                // "cat /sys/class/power_supply/BAT1/capacity");
-                // execute_alias("gd ", "git diff ");
-                // execute_alias("vsh ", "$DEV/vsh/main.out");
-                // execute_alias("gls ", "git ls-files");
-                // execute_alias("xcnt ", "xargs wc -l");
-                // execute_alias("cnt ", "xargs wc -l");
         }
 }
