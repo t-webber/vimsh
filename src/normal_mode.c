@@ -3,10 +3,7 @@
 #include "normal_mode.h"
 #include "str.h"
 
-typedef enum {
-        None = '\0',
-        f = 'f',
-} VimAction;
+typedef enum { None = '\0', f = 'f', F = 'F' } VimAction;
 
 typedef struct {
         int number;
@@ -30,7 +27,7 @@ static int get_count(void) {
         return current_command.number;
 }
 
-static void try_execute_command(char **ptr) {
+static void try_execute_command(char **ptr, const char *const line) {
         log("Executing command: |%d|%c|%s|\n", current_command.number,
             current_command.action, current_command.arguments.value);
 
@@ -40,21 +37,34 @@ static void try_execute_command(char **ptr) {
                 if (current_command.arguments.len != 1)
                         return;
 
-                char expected_char = *current_command.arguments.value;
-                int expected_count = get_count();
+                const char expected_char = *current_command.arguments.value;
+                const int expected_count = get_count();
                 int count = 0;
-                log("Move to %c!\n ptr = (%d) & expected = (%d)\n",
-                    expected_char, **ptr, expected_count);
                 while (**ptr != '\0' && count < expected_count) {
-                        log("incr");
                         ++*ptr;
                         if (**ptr == expected_char) {
                                 count += 1;
                         }
                 }
                 reset_command();
-                log("\n");
 
+                return;
+        }
+
+        case F: {
+                if (current_command.arguments.len != 1)
+                        return;
+
+                const char expected_char = *current_command.arguments.value;
+                const int expected_count = get_count();
+                int count = 0;
+                while (*ptr != line && count < expected_count) {
+                        --*ptr;
+                        if (**ptr == expected_char) {
+                                count += 1;
+                        }
+                }
+                reset_command();
                 return;
         }
 
@@ -65,7 +75,7 @@ static void try_execute_command(char **ptr) {
         }
 }
 
-void handle_normal_mode(char c, char **ptr) {
+void handle_normal_mode(const char c, char **ptr, char *const line) {
 
         switch (c) {
 
@@ -111,11 +121,18 @@ void handle_normal_mode(char c, char **ptr) {
                         push_string(&current_command.arguments, c);
                 break;
 
+        case 'F':
+                if (current_command.action == None)
+                        current_command.action = F;
+                else
+                        push_string(&current_command.arguments, c);
+                break;
+
         default:
                 push_string(&current_command.arguments, c);
         }
 
-        try_execute_command(ptr);
+        try_execute_command(ptr, line);
 }
 
 void free_vim_command(void) { free(current_command.arguments.value); }

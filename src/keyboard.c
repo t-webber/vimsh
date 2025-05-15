@@ -314,7 +314,7 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
                 switch (vim_mode) {
 
                 case NormalMode:
-                        handle_normal_mode(c, ptr);
+                        handle_normal_mode(c, ptr, line);
                         return;
 
                 case InsertMode:
