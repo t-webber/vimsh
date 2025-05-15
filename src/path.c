@@ -111,8 +111,8 @@ Executable *find_one_with_prefix(const char *const prefix,
 #ifdef TEST
 static void count_executables(void) {
         const char *const command =
-            "echo $PATH | sed 's/:/\\n/g' | grep -v ^$  | xargs ls -lA | grep "
-            "^-  | awk '{print $NF}' | sort -n | uniq | wc -l";
+            "echo $PATH | sed \"s/:/\\n/g\" | grep -v ^$  | xargs ls -lA | "
+            "grep ^-  | awk '{print $NF}' | wc -l";
 
         FILE *find = popen(command, "r");
 
@@ -121,6 +121,7 @@ static void count_executables(void) {
 
         char line[16];
         fgets(line, 16, find);
+        printf("Line : %s\n", line);
         size_t expected = (size_t)atoi(line);
         pclose(find);
 
