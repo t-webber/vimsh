@@ -121,7 +121,6 @@ static void count_executables(void) {
 
         char line[16];
         fgets(line, 16, find);
-        printf("Line : %s\n", line);
         size_t expected = (size_t)atoi(line);
         pclose(find);
 

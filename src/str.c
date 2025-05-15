@@ -83,6 +83,8 @@ static void test_extend(void) {
         extend_string(&s, " world!", 7);
         assert(s.len == 14);
         assert(strcmp("#Hello, world!", s.value) == 0);
+
+        free(s.value);
 }
 
 /// Tests for the @ref str_prefix_eq function
