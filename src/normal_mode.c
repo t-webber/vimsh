@@ -11,21 +11,22 @@ typedef enum {
 typedef struct {
         int number;
         VimAction action;
-        char *arguments;
+        String arguments;
 } VimCommand;
 
 static VimCommand current_command = {
-    .number = 0, .action = None, .arguments = NULL};
+    .number = 0, .action = None, .arguments = NEW_STRING};
 
 static void reset_command(void) {
         current_command.number = 0;
-        current_command.arguments = NULL;
+        current_command.arguments.len = 0;
+        current_command.arguments.value[0] = '\0';
         current_command.action = None;
 }
 
 void handle_normal_mode(char c, char **ptr) {
         log("Command: |%d|%c|%s|\n", current_command.number,
-            current_command.action, current_command.arguments);
+            current_command.action, current_command.arguments.value);
 
         switch (c) {
 

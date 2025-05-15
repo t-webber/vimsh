@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#define NEW_STRING {.value = NULL, .len = 0, .cap = 0}
+
 /// Inserts a char in a string.
 ///
 /// This performs `*insert_position = c` without deleting the data under

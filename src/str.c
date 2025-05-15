@@ -68,7 +68,7 @@ bool str_prefix_eq(const char *const s1, const char *const s2) {
 
 // Tests for the @ref extend_string function
 static void test_extend(void) {
-        String s = {.cap = 0, .len = 0, .value = NULL};
+        String s = NEW_STRING;
 
         extend_string(&s, "#", 1);
         assert(s.len == 1);
@@ -99,7 +99,7 @@ static void test_prefix(void) {
 
 /// Tests the logic on the @ref String struct.
 static void test_grow_string(void) {
-        String s = {.cap = 0, .len = 0, .value = NULL};
+        String s = NEW_STRING;
 
         push_string(&s, 'H');
         push_string(&s, 'e');

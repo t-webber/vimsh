@@ -73,7 +73,7 @@ static bool try_extend_with_alias(const char *const start, String *expanded) {
 }
 
 static String expand_aliases(char *const user_input) {
-        String expanded = {.value = NULL, .len = 0, .cap = 0};
+        String expanded = NEW_STRING;
         for (char *start = user_input, *end = user_input;;) {
                 if (*end != ' ' && *end != '\0') {
                         ++end;
