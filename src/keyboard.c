@@ -3,6 +3,7 @@
 #include "keyboard.h"
 #include "macros.h"
 #include "main.h"
+#include "normal_mode.h"
 #include "path.h"
 #include "str.h"
 #include <dirent.h>
@@ -234,24 +235,6 @@ static void handle_tab(char *const line, char **ptr, size_t *len) {
 
         closedir(d);
         return;
-}
-
-static void handle_normal_mode(char c, char **ptr) {
-        switch (c) {
-
-        case 'a':
-                if (**ptr != '\0')
-                        ++*ptr;
-                vim_mode = InsertMode;
-                return;
-
-        case 'i':
-                vim_mode = InsertMode;
-                return;
-
-        default:
-                return;
-        }
 }
 
 void handle_keypress(char *const line, char c, char **ptr, size_t *len,
