@@ -24,9 +24,48 @@ static void reset_command(void) {
         current_command.action = None;
 }
 
-void handle_normal_mode(char c, char **ptr) {
-        log("Command: |%d|%c|%s|\n", current_command.number,
+static int get_count(void) {
+        if (current_command.number == 0)
+                return 1;
+        return current_command.number;
+}
+
+static void try_execute_command(char **ptr) {
+        log("Executing command: |%d|%c|%s|\n", current_command.number,
             current_command.action, current_command.arguments.value);
+
+        switch (current_command.action) {
+
+        case f: {
+                if (current_command.arguments.len != 1)
+                        return;
+
+                char expected_char = *current_command.arguments.value;
+                int expected_count = get_count();
+                int count = 0;
+                log("Move to %c!\n ptr = (%d) & expected = (%d)\n",
+                    expected_char, **ptr, expected_count);
+                while (**ptr != '\0' && count < expected_count) {
+                        log("incr");
+                        ++*ptr;
+                        if (**ptr == expected_char) {
+                                count += 1;
+                        }
+                }
+                reset_command();
+                log("\n");
+
+                return;
+        }
+
+        case None:
+                return;
+        default:
+                panic("Unhandled enum variant\n");
+        }
+}
+
+void handle_normal_mode(char c, char **ptr) {
 
         switch (c) {
 
@@ -47,28 +86,36 @@ void handle_normal_mode(char c, char **ptr) {
                 else
                         current_command.number =
                             current_command.number * 10 + c - '0';
-                return;
+                break;
 
         case 'a':
+                if (current_command.action != None) {
+                        push_string(&current_command.arguments, c);
+                        break;
+                }
                 if (**ptr != '\0')
                         ++*ptr;
                 reset_command();
                 vim_mode = InsertMode;
-                return;
+                break;
 
         case 'i':
                 reset_command();
                 vim_mode = InsertMode;
-                return;
+                break;
 
         case 'f':
                 if (current_command.action == None)
                         current_command.action = f;
                 else
                         push_string(&current_command.arguments, c);
-                return;
+                break;
 
         default:
-                return;
+                push_string(&current_command.arguments, c);
         }
+
+        try_execute_command(ptr);
 }
+
+void free_vim_command(void) { free(current_command.arguments.value); }

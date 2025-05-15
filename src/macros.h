@@ -1,11 +1,11 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAX_LINE 512
 
 #ifdef TEST
-#include <stdlib.h>
 #define DIE exit(1);
 #define log(...) printf(__VA_ARGS__);
 #else
