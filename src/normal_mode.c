@@ -40,16 +40,13 @@ void handle_normal_mode(char c, char **ptr) {
         case '7':
         case '8':
         case '9':
-                if (current_command.action == None) {
-
-                }
-
-                else if (current_command.number == 0) {
+                if (current_command.action != None)
+                        push_string(&current_command.arguments, c);
+                else if (current_command.number == 0)
                         current_command.number = c - '0';
-                } else {
+                else
                         current_command.number =
                             current_command.number * 10 + c - '0';
-                }
                 return;
 
         case 'a':
@@ -62,6 +59,13 @@ void handle_normal_mode(char c, char **ptr) {
         case 'i':
                 reset_command();
                 vim_mode = InsertMode;
+                return;
+
+        case 'f':
+                if (current_command.action == None)
+                        current_command.action = f;
+                else
+                        push_string(&current_command.arguments, c);
                 return;
 
         default:
