@@ -236,7 +236,26 @@ static void handle_tab(char *const line, char **ptr, size_t *len) {
         return;
 }
 
+static void handle_normal_mode(char c, char **ptr) {
+        switch (c) {
+
+        case 'a':
+                if (**ptr != '\0')
+                        ++*ptr;
+                vim_mode = InsertMode;
+                return;
+
+        case 'i':
+                vim_mode = InsertMode;
+                return;
+
+        default:
+                return;
+        }
+}
+
 void handle_keypress(char *const line, char c, char **ptr, size_t *len,
+
                      const char *const ps1) {
 
         if (c == ESC) {
@@ -308,11 +327,23 @@ void handle_keypress(char *const line, char c, char **ptr, size_t *len,
         }
 
         default:
-                update_state(c);
-                ++*len;
-                insert_char(*ptr, c);
-                ++*ptr;
-                return;
+
+                switch (vim_mode) {
+
+                case NormalMode:
+                        handle_normal_mode(c, ptr);
+                        return;
+
+                case InsertMode:
+                        update_state(c);
+                        ++*len;
+                        insert_char(*ptr, c);
+                        ++*ptr;
+                        return;
+
+                default:
+                        panic("Unhandled mode %d.\n", vim_mode);
+                }
         }
 }
 
