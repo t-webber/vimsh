@@ -140,7 +140,7 @@ static void log_motion(const Motion motion, const MotionType type) {
         log("\n");
 }
 
-static bool add_single_char_motion(Motion *const motion, enum Action a,
+static bool add_single_char_motion(Motion *const motion, const enum Action a,
                                    const MotionType type) {
         if (type == NoType) {
                 motion->action = a;
@@ -150,6 +150,23 @@ static bool add_single_char_motion(Motion *const motion, enum Action a,
         if (type == MotionChild && motion->child->action == NoMotion) {
                 motion->child->action = a;
                 motion->child->arg = '\0';
+                return true;
+        }
+        return false;
+}
+
+static bool add_double_char_motion(Motion *const motion, const enum Action a,
+                                   const MotionType type) {
+        if (type == NoType) {
+                motion->action = a;
+                motion->arg0 = '\0';
+                motion->arg1 = '\0';
+                return true;
+        }
+        if (type == MotionChild && motion->child->action == NoMotion) {
+                motion->child->action = a;
+                motion->child->arg0 = '\0';
+                motion->child->arg1 = '\0';
                 return true;
         }
         return false;
@@ -201,59 +218,85 @@ static void reset_command(void) {
         current_motion = (Motion){.repeat = 0, .action = NoMotion};
 }
 
+static bool check_reached(const bool is_lower, const char *const ptr,
+                          const char *const line, const int current,
+                          const int expected) {
+
+        return (is_lower ? *ptr != '\0' : ptr != line) && current < expected;
+}
+
 static void try_execute_command(char **ptr, const char *const line) {
         const MotionType type = get_motion_type(&current_motion);
+        const enum Action action = current_motion.action;
 
         log_motion(current_motion, type);
 
-        switch (current_motion.action) {
-
-        case f: {
-                if (current_motion.arg == '\0')
-                        return;
-
-                const char expected_char = current_motion.arg;
-                const int expected_count = get_count(&current_motion);
-                int count = 0;
-                while (**ptr != '\0' && count < expected_count) {
-                        ++*ptr;
-                        if (**ptr == expected_char)
-                                count += 1;
-                }
-                reset_command();
-
-                return;
-        }
-
-        case F: {
-                if (current_motion.arg == '\0')
-                        return;
-
-                const char expected_char = current_motion.arg;
-                const int expected_count = get_count(&current_motion);
-                int count = 0;
-                while (*ptr != line && count < expected_count) {
-                        --*ptr;
-                        if (**ptr == expected_char)
-                                count += 1;
-                }
-                reset_command();
-                return;
-        }
+        switch (action) {
 
         case NoMotion:
                 return;
 
-        case s:
+        case F:
+        case f: {
+                if (current_motion.arg == '\0')
+                        return;
+
+                const bool is_lower = action == f;
+                const char expected_char = current_motion.arg;
+                const int expected_cnt = get_count(&current_motion);
+                int cnt = 0;
+
+                while (check_reached(is_lower, *ptr, line, cnt, expected_cnt)) {
+                        if (is_lower)
+                                ++*ptr;
+                        else
+                                --*ptr;
+                        if (**ptr == expected_char)
+                                cnt += 1;
+                }
+
+                reset_command();
+                return;
+        }
+
         case S:
+        case s: {
+                if (*line == '\0') {
+                        reset_command();
+                        return;
+                }
+
+                if (current_motion.arg0 == '\0' || current_motion.arg1 == '\0')
+                        return;
+
+                const bool is_lower = action == s;
+                const char c0 = current_motion.arg0;
+                const char c1 = current_motion.arg1;
+                const int expected_cnt = get_count(&current_motion);
+                int cnt = 0;
+
+                while (check_reached(is_lower, *ptr, line, cnt, expected_cnt)) {
+                        if (is_lower)
+                                ++*ptr;
+                        else
+                                --*ptr;
+                        assert(**ptr != '\0');
+                        if (**ptr == c0 && *(*ptr + 1) == c1)
+                                cnt += 1;
+                }
+
+                reset_command();
+                return;
+        }
+
         case d:
         case y:
         case w:
         case W:
         case EOL:
         case BOL:
-        default:
-                panic("Unhandled enum variant\n");
+
+                default_case(action);
         }
 }
 
@@ -298,12 +341,16 @@ void handle_normal_mode(const char c, char **ptr, char *const line) {
                 break;
 
         case 'f':
-                if (!add_single_char_motion(&current_motion, f, type))
+        case 'F':
+                if (!add_single_char_motion(&current_motion, (enum Action)c,
+                                            type))
                         goto label;
                 break;
 
-        case 'F':
-                if (!add_single_char_motion(&current_motion, F, type))
+        case 's':
+        case 'S':
+                if (!add_double_char_motion(&current_motion, (enum Action)c,
+                                            type))
                         goto label;
                 break;
 
