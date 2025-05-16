@@ -140,6 +140,19 @@ static void log_motion(const Motion motion, const MotionType type) {
         log("\n");
 }
 
+static bool add_simple_repeat(Motion *const motion, const enum Action a,
+                              const MotionType type) {
+        if (type == NoType) {
+                motion->action = a;
+                return true;
+        }
+        if (type == MotionChild && motion->child->action == NoMotion) {
+                motion->child->action = a;
+                return true;
+        }
+        return false;
+}
+
 static bool add_single_char_motion(Motion *const motion, const enum Action a,
                                    const MotionType type) {
         if (type == NoType) {
@@ -236,6 +249,17 @@ static void try_execute_command(char **ptr, const char *const line) {
         case NoMotion:
                 return;
 
+        case w:
+        case W: {
+                const bool is_lower = action == w;
+                while ((is_lower ? **ptr != '\0' : *ptr != line))
+                        if ((is_lower ? *++*ptr : *--*ptr) == ' ')
+                                break;
+
+                reset_command();
+                return;
+        }
+
         case F:
         case f: {
                 if (current_motion.arg == '\0')
@@ -291,8 +315,6 @@ static void try_execute_command(char **ptr, const char *const line) {
 
         case d:
         case y:
-        case w:
-        case W:
         case EOL:
         case BOL:
 
@@ -338,6 +360,13 @@ void handle_normal_mode(const char c, char **ptr, char *const line) {
                         goto label;
                 reset_command();
                 vim_mode = InsertMode;
+                break;
+
+        case 'w':
+        case 'W':
+                if (!add_simple_repeat(&current_motion, (enum Action)c, type)) {
+                        goto label;
+                }
                 break;
 
         case 'f':
