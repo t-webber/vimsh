@@ -40,3 +40,8 @@
 #define eprint(...) fprintf(stderr, __VA_ARGS__)
 
 #define max(a, b) (a < b ? b : a)
+
+#define default_case(x)                                                        \
+        default:                                                               \
+                panic("[%s:%d at %s]Unhandled case: %d.\n", __FILE__,          \
+                      __LINE__, __func__, x);

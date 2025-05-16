@@ -1,50 +1,224 @@
 #include "macros.h"
 #include "main.h"
 #include "normal_mode.h"
-#include "str.h"
+#include <stdbool.h>
 
-typedef enum { None = '\0', f = 'f', F = 'F' } VimAction;
+typedef struct Motion {
+        int repeat;
+        enum Action {
+                f = 'f',
+                F = 'F',
+                d = 'd',
+                s = 's',
+                S = 'S',
+                y = 'y',
+                w = 'w',
+                W = 'W',
+                EOL = '$',
+                BOL = '^',
+                NoMotion = '0'
+        } action;
+        union {
+                struct Motion *child;
+                struct {
+                        char arg;
+                };
+                struct {
+                        char arg0;
+                        char arg1;
+                };
+        };
+} Motion;
 
-typedef struct {
-        int number;
-        VimAction action;
-        String arguments;
-} VimCommand;
+typedef enum {
+        NoType,
+        MotionChild,
+        SimpleRepeat,
+        SingleChar,
+        DoubleChar
+} MotionType;
 
-static VimCommand current_command = {
-    .number = 0, .action = None, .arguments = NEW_STRING};
+static MotionType get_motion_type(const Motion *const m) {
+        switch (m->action) {
 
-static void reset_command(void) {
-        current_command.number = 0;
-        current_command.arguments.len = 0;
-        current_command.arguments.value[0] = '\0';
-        current_command.action = None;
+        case NoMotion:
+        case EOL:
+        case BOL:
+                return NoType;
+
+        case d:
+        case y:
+                return MotionChild;
+
+        case w:
+        case W:
+                return SimpleRepeat;
+
+        case f:
+        case F:
+                return SingleChar;
+
+        case s:
+        case S:
+                return DoubleChar;
+
+                default_case(m->action);
+        }
 }
 
-static int get_count(void) {
-        if (current_command.number == 0)
+static int get_count(const Motion *const m) {
+        const MotionType type = get_motion_type(m);
+
+        switch (type) {
+
+        case NoType:
                 return 1;
-        return current_command.number;
+
+        case MotionChild:
+                return get_count(m->child);
+
+        case SimpleRepeat:
+        case SingleChar:
+        case DoubleChar:
+                if (m->repeat == 0)
+                        return 1;
+                return m->repeat;
+
+                default_case(type);
+        }
+}
+
+static void log_motion(const Motion motion, const MotionType type) {
+
+        log("@ [%d]%c", motion.repeat, motion.action);
+
+        switch (type) {
+
+        case NoType:
+        case SimpleRepeat:
+                break;
+
+        case MotionChild: {
+
+                const MotionType child_type = get_motion_type(motion.child);
+                log("|[%d]%c", motion.child->repeat, motion.child->action);
+
+                switch (child_type) {
+
+                case NoType:
+                case SimpleRepeat:
+                        break;
+
+                case MotionChild:
+                        panic("Can't nest children.\n");
+
+                case SingleChar:
+                        log("(%c)", motion.arg);
+                        break;
+
+                case DoubleChar:
+                        log("(%c, %c)", motion.arg0, motion.arg1);
+                        break;
+
+                        default_case(child_type);
+                }
+                log("|");
+                break;
+        }
+
+        case SingleChar:
+                log("(%c)", motion.arg);
+                break;
+
+        case DoubleChar:
+                log("(%c, %c)", motion.arg0, motion.arg1);
+                break;
+
+                default_case(type);
+        }
+
+        log("\n");
+}
+
+static bool add_single_char_motion(Motion *const motion, enum Action a,
+                                   const MotionType type) {
+        if (type == NoType) {
+                motion->action = a;
+                motion->arg = '\0';
+                return true;
+        }
+        if (type == MotionChild && motion->child->action == NoMotion) {
+                motion->child->action = a;
+                motion->child->arg = '\0';
+                return true;
+        }
+        return false;
+}
+
+static void increment_repeat(Motion *const motion, const char c) {
+        int digit = c - '0';
+        if (motion->repeat == 0)
+                motion->repeat = digit;
+        else
+                motion->repeat = motion->repeat * 10 + digit;
+}
+
+static void push_arg(const MotionType type, Motion *const motion,
+                     const char c) {
+        switch (type) {
+
+        case NoType:
+        case SimpleRepeat:
+                log("Invalid binding %c\n.", c);
+                return;
+
+        case MotionChild:
+                push_arg(get_motion_type(motion->child), motion->child, c);
+                return;
+
+        case SingleChar:
+                assert(motion->arg == '\0');
+                motion->arg = c;
+                return;
+
+        case DoubleChar:
+                if (motion->arg0 == '\0') {
+                        motion->arg0 = c;
+                        return;
+                }
+
+                assert(motion->arg1 == '\0');
+                motion->arg1 = c;
+                return;
+
+                default_case(type);
+        }
+}
+
+static Motion current_motion = {.repeat = 0, .action = NoMotion};
+
+static void reset_command(void) {
+        current_motion = (Motion){.repeat = 0, .action = NoMotion};
 }
 
 static void try_execute_command(char **ptr, const char *const line) {
-        log("Executing command: |%d|%c|%s|\n", current_command.number,
-            current_command.action, current_command.arguments.value);
+        const MotionType type = get_motion_type(&current_motion);
 
-        switch (current_command.action) {
+        log_motion(current_motion, type);
+
+        switch (current_motion.action) {
 
         case f: {
-                if (current_command.arguments.len != 1)
+                if (current_motion.arg == '\0')
                         return;
 
-                const char expected_char = *current_command.arguments.value;
-                const int expected_count = get_count();
+                const char expected_char = current_motion.arg;
+                const int expected_count = get_count(&current_motion);
                 int count = 0;
                 while (**ptr != '\0' && count < expected_count) {
                         ++*ptr;
-                        if (**ptr == expected_char) {
+                        if (**ptr == expected_char)
                                 count += 1;
-                        }
                 }
                 reset_command();
 
@@ -52,30 +226,40 @@ static void try_execute_command(char **ptr, const char *const line) {
         }
 
         case F: {
-                if (current_command.arguments.len != 1)
+                if (current_motion.arg == '\0')
                         return;
 
-                const char expected_char = *current_command.arguments.value;
-                const int expected_count = get_count();
+                const char expected_char = current_motion.arg;
+                const int expected_count = get_count(&current_motion);
                 int count = 0;
                 while (*ptr != line && count < expected_count) {
                         --*ptr;
-                        if (**ptr == expected_char) {
+                        if (**ptr == expected_char)
                                 count += 1;
-                        }
                 }
                 reset_command();
                 return;
         }
 
-        case None:
+        case NoMotion:
                 return;
+
+        case s:
+        case S:
+        case d:
+        case y:
+        case w:
+        case W:
+        case EOL:
+        case BOL:
         default:
                 panic("Unhandled enum variant\n");
         }
 }
 
 void handle_normal_mode(const char c, char **ptr, char *const line) {
+
+        const MotionType type = get_motion_type(&current_motion);
 
         switch (c) {
 
@@ -89,20 +273,17 @@ void handle_normal_mode(const char c, char **ptr, char *const line) {
         case '7':
         case '8':
         case '9':
-                if (current_command.action != None)
-                        push_string(&current_command.arguments, c);
-                else if (current_command.number == 0)
-                        current_command.number = c - '0';
+                if (type == NoType)
+                        increment_repeat(&current_motion, c);
+                else if (type == MotionChild)
+                        increment_repeat(current_motion.child, c);
                 else
-                        current_command.number =
-                            current_command.number * 10 + c - '0';
+                        goto label;
                 break;
 
         case 'a':
-                if (current_command.action != None) {
-                        push_string(&current_command.arguments, c);
-                        break;
-                }
+                if (type != NoType)
+                        goto label;
                 if (**ptr != '\0')
                         ++*ptr;
                 reset_command();
@@ -110,29 +291,26 @@ void handle_normal_mode(const char c, char **ptr, char *const line) {
                 break;
 
         case 'i':
+                if (type != NoType)
+                        goto label;
                 reset_command();
                 vim_mode = InsertMode;
                 break;
 
         case 'f':
-                if (current_command.action == None)
-                        current_command.action = f;
-                else
-                        push_string(&current_command.arguments, c);
+                if (!add_single_char_motion(&current_motion, f, type))
+                        goto label;
                 break;
 
         case 'F':
-                if (current_command.action == None)
-                        current_command.action = F;
-                else
-                        push_string(&current_command.arguments, c);
+                if (!add_single_char_motion(&current_motion, F, type))
+                        goto label;
                 break;
 
+        label:
         default:
-                push_string(&current_command.arguments, c);
-        }
+                push_arg(type, &current_motion, c);
+        };
 
         try_execute_command(ptr, line);
 }
-
-void free_vim_command(void) { free(current_command.arguments.value); }
