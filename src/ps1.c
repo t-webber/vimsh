@@ -1,38 +1,39 @@
+#include "ps1.h"
 #include "macros.h"
 #include "main.h"
-#include "ps1.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 #define SHORT(path, alias, condition)                                          \
         if (condition) {                                                       \
-                return stpcpy(path, alias);                                    \
+                stpcpy(path, alias);                                           \
+                return;                                                        \
         }
 
 #define SHORTP(path, pwd, var, alias)                                          \
         SHORT(path, alias, strcmp(getenv(var), pwd) == 0);
 
-#define RED "\x1b[31m"
-#define GREEN "\x1b[32m"
-#define YELLOW "\x1b[33m"
-#define BLUE "\x1b[34m"
-#define PURPLE "\x1b[35m"
-#define CYAN "\x1b[36m"
-#define RESET_COLOUR "\x1b[0m"
+static char *exec(const char *const command) {
+        char *output = malloc(200 * sizeof(char));
+        *output = '\0';
+        FILE *f = popen(command, "r");
+        fgets(output, 199, f);
+        pclose(f);
+        return output;
+}
 
-static char *pwd(char *path) {
-        char pwd[128];
-        getcwd(pwd, 128);
-
+static void pwd(char *path) {
+        char *pwd = exec("pwd");
         const size_t len = strlen(pwd);
+        assert(len > 1);
         char *end = pwd + len;
         assert(*end == '\0');
-
-        path = stpcpy(path, CYAN);
-        assert(*end == '\0');
+        --end;
+        assert(*end == '\n');
+        *end = '\0';
 
         SHORT(path, "/", strcmp(pwd, "/") == 0);
         SHORTP(path, pwd, "HOME", "~");
@@ -40,6 +41,7 @@ static char *pwd(char *path) {
         SHORTP(path, pwd, "CMD", "c");
         SHORTP(path, pwd, "APPS", "a");
         SHORTP(path, pwd, "DEV", "d");
+        SHORTP(path, pwd, "DATA", "t");
 
         while (*end != '/' && *end != '.')
                 --end;
@@ -47,7 +49,9 @@ static char *pwd(char *path) {
         if (end != pwd || *(end + 1) != '\0')
                 ++end;
 
-        return stpcpy(path, end);
+        stpcpy(path, end);
+
+        free(pwd);
 }
 
 static int get_battery_level(void) {
@@ -58,30 +62,52 @@ static int get_battery_level(void) {
         return atoi(output);
 }
 
-static char *git_branch(char *end) {
-        FILE *head_fd = fopen(".git/HEAD", "r");
-        if (head_fd == NULL) {
-                return end;
+void get_ps1(char *const ps1) {
+        char path[64];
+        pwd(path);
+
+        int battery_level = get_battery_level();
+        char battery[3] = "";
+        if (battery_level < 30) {
+                stpcpy(battery, "!");
         }
 
-        char head[128];
-        fgets(head, sizeof(head), head_fd);
-        fclose(head_fd);
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
 
-        *(head + strlen(head) - 1) = '\0';
-        end = stpcpy(end, GREEN);
+        char *branch = exec("/usr/bin/git branch --show-current 2>/dev/null");
+        if (*branch != '\0')
+                *(branch + strlen(branch) - 1) = ' ';
 
-        if (strcmp(head + 16, "main") == 0)
-                return stpcpy(end, ". ");
+        if (strcmp(branch, "main ") == 0)
+                stpcpy(branch, ".");
 
-        else if (strcmp(head + 16, "master") == 0)
-                return stpcpy(end, ": ");
+        if (strcmp(branch, "master ") == 0)
+                stpcpy(branch, ":");
 
-        else {
-                end = stpcpy(end, head + 16);
-                *end++ = ' ';
-                return end;
+        char mode;
+
+        switch (vim_mode) {
+        case NormalMode:
+                mode = 'N';
+                break;
+        case InsertMode:
+                mode = 'I';
+                break;
+
+                default_case(vim_mode);
         }
+
+        sprintf(ps1,
+                "\001\x1b[31m\002%s"
+                "\001\x1b[33m\002%d%d"
+                "\001\x1b[36m\002%s"
+                "\001\x1b[32m\002%s"
+                "\001\x1b[35m\002%c"
+                "\001\x1b[39m\002",
+                battery, tm.tm_hour % 12, tm.tm_min, path, branch, mode);
+
+        free(branch);
 }
 
 size_t ps1_len(const char *const ps1) {
@@ -90,40 +116,5 @@ size_t ps1_len(const char *const ps1) {
         for (const char *counter = ps1; *counter != '\0'; ++counter, ++len)
                 if (*counter == '\033')
                         ++esc_cnt;
-        return len - 5 * esc_cnt;
-}
-
-void get_ps1(char *const ps1) {
-        char *end = ps1;
-        if (get_battery_level() < 30) {
-                end = stpcpy(end, RED);
-                end = stpcpy(end, "! ");
-        }
-
-        time_t t = time(NULL);
-        struct tm tm = *localtime(&t);
-        end += sprintf(end, "%s%d%d ", YELLOW, tm.tm_hour % 12, tm.tm_min);
-
-        end = pwd(end);
-        *end++ = ' ';
-        end = stpcpy(end, PURPLE);
-
-        switch (vim_mode) {
-
-        case NormalMode:
-                end = stpcpy(end, "N ");
-                break;
-
-        case InsertMode:
-                end = stpcpy(end, "I ");
-                break;
-
-        default:
-                panic("Invalid mode: %d\n", vim_mode);
-        }
-
-        end = git_branch(end);
-        end = stpcpy(end, RESET_COLOUR);
-
-        assert(*end == '\0');
+        return len - 5 * esc_cnt + 1;
 }
